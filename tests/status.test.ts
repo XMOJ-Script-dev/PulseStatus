@@ -42,6 +42,7 @@ describe('history and maintenance', () => {
     expect(maintenanceState(parsed!.startsAt, parsed!.endsAt, new Date('2026-10-14T18:00:00Z'))).toBe('in_progress');
     expect(maintenanceState(parsed!.startsAt, parsed!.endsAt, new Date('2026-10-15T00:00:00Z'))).toBe('completed');
     expect(parseMaintenanceTimes('no timestamps')).toBeNull();
+    expect(parseMaintenanceTimes('### Starts at\n2026-10-15T02:00:00+08:00\n### Ends at\n2026-10-15T03:00:00+08:00\n### Timezone\nAsia/Singapore')).not.toBeNull();
   });
 });
 

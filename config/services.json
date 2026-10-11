@@ -1,0 +1,36 @@
+[
+  {
+    "id": "web",
+    "name": "XMOJ-Script main site",
+    "group": "Core services",
+    "description": "The primary XMOJ-Script website.",
+    "publicUrl": "https://xmoj-script.uk",
+    "checkUrl": "https://xmoj-script.uk",
+    "monitorMode": "scheduled"
+  },
+  {
+    "id": "api",
+    "name": "XMOJ-Script API",
+    "group": "Core services",
+    "description": "The XMOJ-Script API service.",
+    "publicUrl": "https://api.xmoj-script.uk",
+    "monitorMode": "manual"
+  },
+  {
+    "id": "assets",
+    "name": "XMOJ-Script assets",
+    "group": "Supporting services",
+    "description": "Public image and asset hosting.",
+    "publicUrl": "https://assets.xmoj-script.uk",
+    "monitorMode": "manual"
+  },
+  {
+    "id": "docs",
+    "name": "XMOJ-Script documentation",
+    "group": "Supporting services",
+    "description": "Public project documentation.",
+    "publicUrl": "https://docs.xmoj-script.uk",
+    "checkUrl": "https://docs.xmoj-script.uk",
+    "monitorMode": "scheduled"
+  }
+]

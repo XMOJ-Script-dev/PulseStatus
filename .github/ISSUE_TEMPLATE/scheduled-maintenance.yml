@@ -1,0 +1,34 @@
+name: Scheduled maintenance
+description: Publish a planned maintenance window.
+title: "[Maintenance] "
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Maintenance description
+    validations:
+      required: true
+  - type: input
+    id: starts
+    attributes:
+      label: Starts at
+      description: ISO 8601 timestamp with timezone, for example 2026-10-15T02:00:00+08:00
+    validations:
+      required: true
+  - type: input
+    id: ends
+    attributes:
+      label: Ends at
+      description: ISO 8601 timestamp with timezone
+    validations:
+      required: true
+  - type: input
+    id: timezone
+    attributes:
+      label: Timezone
+      placeholder: Asia/Singapore
+    validations:
+      required: true
+  - type: markdown
+    attributes:
+      value: "Maintainers must add statuspage/maintenance and service/* labels before publication."

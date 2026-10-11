@@ -1,0 +1,58 @@
+name: PulseStatus
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+  issues:
+    types: [opened, edited, labeled, unlabeled, closed, reopened]
+  issue_comment:
+    types: [created, edited, deleted]
+  discussion:
+    types: [created, edited, deleted, labeled, unlabeled]
+  discussion_comment:
+    types: [created, edited, deleted]
+permissions:
+  contents: write
+  issues: read
+  discussions: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pulsestatus-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    if: github.event_name != 'issue_comment' || github.event.issue.pull_request == null
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+    steps:
+      - uses: actions/checkout@v4.2.2
+      - uses: actions/setup-node@v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run validate-config
+      - name: Sync GitHub Issues
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PULSE_SERVICES: web,api,assets,docs
+          PULSE_TRUSTED_MAINTAINERS: ${{ vars.PULSE_TRUSTED_MAINTAINERS }}
+        run: npm run sync-issues
+      - run: npm run check-services
+        env:
+          PULSE_MONITOR_MODE: manual
+      - run: npm run build-data && npm run generate-badges
+      - run: npm run build
+      - uses: actions/configure-pages@v5.0.0
+      - uses: actions/upload-pages-artifact@v3.0.1
+        with:
+          path: dist
+      - uses: actions/deploy-pages@v4.0.5

@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-10-11T13:39:16.348Z",
+  "services": [
+    {
+      "id": "web",
+      "name": "Web application",
+      "group": "Core services",
+      "description": "The public PulseStatus web application.",
+      "monitorMode": "manual",
+      "status": "unknown"
+    },
+    {
+      "id": "api",
+      "name": "API",
+      "group": "Core services",
+      "description": "Public API endpoints.",
+      "monitorMode": "manual",
+      "status": "unknown"
+    }
+  ]
+}

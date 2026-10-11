@@ -1,0 +1,14 @@
+name: Incident report
+description: Publish a confirmed service incident (maintainers apply the required labels).
+title: "[Incident] "
+body:
+  - type: markdown
+    attributes:
+      value: "Use this form for a confirmed incident. Do not include credentials or private data."
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact summary
+      description: Describe the customer-visible impact in plain text.
+    validations:
+      required: true

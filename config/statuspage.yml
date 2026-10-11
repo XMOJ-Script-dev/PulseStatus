@@ -1,0 +1,27 @@
+site:
+  name: PulseStatus
+  locale: en
+  timezone: Asia/Singapore
+  defaultTheme: system
+repository:
+  owner: XMOJ-Script-dev
+  name: PulseStatus
+monitoring:
+  mode: hybrid
+  schedule: "*/15 * * * *"
+  timeoutMs: 5000
+  failuresToDown: 2
+  successesToRecover: 2
+  historyRetentionDays: 90
+issues:
+  publishLabel: statuspage/incident
+  maintenanceLabel: statuspage/maintenance
+  lockOfficialIncidents: false
+  trustedMaintainers: [PythonSmall-Q, boomzero, langningchen]
+  trustedAssociations: [OWNER, MEMBER, COLLABORATOR]
+history:
+  initialMonths: 3
+  monthsPerLoad: 3
+embed:
+  enabled: true
+  pollIntervalMs: 300000

@@ -1,10 +1,10 @@
 import type { Incident, Service, Summary } from '../types/status';
 import { sortIncidents } from '../utils/status';
-import { dataUrl, formatDate, incidentCard, layout, serviceCard, statusClass } from './shared';
+import { base, dataUrl, formatDate, incidentCard, layout, serviceCard, statusClass } from './shared';
 import { statusLabel, t } from '../i18n';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-app.innerHTML = layout('PulseStatus', `<section class="hero"><div><p class="muted">${t('serviceStatus')}</p><h1>PulseStatus</h1><p class="muted">${t('tagline')}</p></div></section><div id="status" class="status-banner unknown" aria-live="polite"><span class="status-dot"></span><strong>${t('limitedMonitoring')}</strong></div><section><div class="section-heading"><h2>${t('activeIncidents')}</h2><span id="incident-count" class="muted"></span></div><div id="incidents" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section><div class="section-heading"><h2>${t('services')}</h2></div><div id="services" class="service-grid"><p class="card muted">${t('limitedMonitoring')}…</p></div></section>`);
+app.innerHTML = layout('PulseStatus', `<section class="hero hero-enterprise"><div class="hero-copy"><p class="eyebrow">${t('publicStatus')}</p><h1>PulseStatus</h1><p class="hero-lede">${t('tagline')}</p><p class="trust-line"><span class="trust-check">✓</span>${t('trustedUpdates')}</p></div><div class="hero-aside"><span class="hero-aside-label">${t('liveSnapshot')}</span><strong>${t('incidentCenter')}</strong><a href="${base}history.html">${t('history')} →</a></div></section><div id="status" class="status-banner unknown" aria-live="polite"><span class="status-dot"></span><div><strong>${t('limitedMonitoring')}</strong><span class="status-context">${t('dataFreshness')}</span></div></div><section><div class="section-heading"><div><p class="eyebrow">${t('incidentCenter')}</p><h2>${t('activeIncidents')}</h2></div><span id="incident-count" class="section-count"></span></div><div id="incidents" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section><div class="section-heading"><div><p class="eyebrow">${t('serviceDirectory')}</p><h2>${t('services')}</h2></div><span class="section-note">${t('source')}: ${t('githubIssues')}</span></div><div id="services" class="service-grid"><p class="card muted">${t('limitedMonitoring')}…</p></div></section>`);
 
 async function load<T>(path: string): Promise<T> {
   const response = await fetch(dataUrl(path));
@@ -21,10 +21,10 @@ async function render(): Promise<void> {
     ]);
     const status = document.querySelector<HTMLDivElement>('#status')!;
     status.className = `status-banner ${statusClass(summary)}`;
-    status.innerHTML = `<span class="status-dot"></span><div><strong>${statusLabel(summary.overall)}</strong><div class="muted">${t('updated')} ${formatDate(summary.generatedAt)}</div></div>`;
+    status.innerHTML = `<span class="status-dot"></span><div><strong>${statusLabel(summary.overall)}</strong><span class="status-context">${t('updated')} ${formatDate(summary.generatedAt)}</span></div>`;
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
-    document.querySelector('#incidents')!.innerHTML = active.length ? active.map(incidentCard).join('') : `<p class="card empty">${t('noActiveIncidents')}</p>`;
+    document.querySelector('#incidents')!.innerHTML = active.length ? active.map(incidentCard).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${t('noIncidentsNote')}</span></p>`;
     document.querySelector('#services')!.innerHTML = services.services.length ? services.services.map(serviceCard).join('') : '<p class="card empty">No service data available</p>';
   } catch (error) {
     document.querySelector('#status')!.outerHTML = `<div class="status-banner unknown error" role="alert"><span class="status-dot"></span><strong>${t('statusUnavailable')}</strong></div>`;

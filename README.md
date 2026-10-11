@@ -1,6 +1,20 @@
 # PulseStatus
 
-PulseStatus is a static GitHub Pages status page. Confirmed incidents come from GitHub Issues with explicit labels; Discussions are optional announcement and maintenance supplements. There is no server, database, login, or browser-side GitHub token.
+> An enterprise-ready, static status and service communications platform for GitHub Pages.
+
+[Use this template](https://github.com/XMOJ-Script-dev/PulseStatus/generate) · [Live example](https://xmoj-script-dev.github.io/PulseStatus/)
+
+PulseStatus turns GitHub Issues into a trustworthy public information center for service status, incidents, planned maintenance, and operational history. It has no server, database, login, or browser-side GitHub token.
+
+## Start from this template
+
+1. Select **Use this template → Create a new repository** and choose your repository name.
+2. Edit `config/statuspage.yml` and `config/services.json` with your organization, services, URLs, timezone, and trusted maintainers.
+3. Add the labels listed in the administrator checklist below.
+4. Enable GitHub Pages with **GitHub Actions** as the source. The first workflow run publishes the site at `https://OWNER.github.io/REPOSITORY/`.
+5. Replace the example GitHub link in `src/pages/shared.ts` if your repository is private to the template's example.
+
+The template deliberately starts with an empty, non-demo data snapshot. It never presents fabricated incidents or health metrics.
 
 ## Local development
 

@@ -1,6 +1,11 @@
 const translations = {
   en: {
     overview: 'Overview', history: 'History', github: 'GitHub', serviceStatus: 'Service status',
+    publicStatus: 'Public service communications', trustedUpdates: 'Verified updates from the operations team',
+    incidentCenter: 'Incident center', serviceDirectory: 'Service directory',
+    noIncidentsNote: 'There are no active incidents affecting our services.',
+    dataFreshness: 'Data freshness', source: 'Source', githubIssues: 'GitHub Issues',
+    liveSnapshot: 'Live published snapshot',
     tagline: 'A clear view of current incidents and service health.', activeIncidents: 'Active incidents',
     incidentHistory: 'Incident history', resolvedEvents: 'Resolved events',
     historyIntro: 'Events are grouped by the UTC month in which they started.',
@@ -22,6 +27,11 @@ const translations = {
   },
   zh: {
     overview: '概览', history: '历史记录', github: 'GitHub', serviceStatus: '服务状态',
+    publicStatus: '对外服务信息中心', trustedUpdates: '来自运营团队的可信更新',
+    incidentCenter: '事故中心', serviceDirectory: '服务目录',
+    noIncidentsNote: '当前没有影响服务的事故。',
+    dataFreshness: '数据新鲜度', source: '数据来源', githubIssues: 'GitHub Issues',
+    liveSnapshot: '已发布的实时快照',
     tagline: '清晰了解当前事故与服务运行状态。', activeIncidents: '正在进行的事故',
     incidentHistory: '事故历史', resolvedEvents: '已解决事件',
     historyIntro: '事件按其开始时间所在的 UTC 月份归档。',

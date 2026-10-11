@@ -10,7 +10,7 @@ export function layout(title: string, content: string): string {
   document.title = title;
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
   return `<div class="site-shell">
-    <header class="site-header"><a class="brand" href="${base}">PulseStatus</a>
+    <header class="site-header"><a class="brand" href="${base}"><span class="brand-mark">P</span><span>PulseStatus</span></a>
       <nav aria-label="Primary navigation"><a href="${base}">${t('overview')}</a><a href="${base}history.html">${t('history')}</a><a href="https://github.com/XMOJ-Script-dev/PulseStatus">${t('github')}</a></nav>
     </header><main>${content}</main>
   </div>`;

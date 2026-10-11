@@ -10,11 +10,11 @@ on:
   issue_comment:
     types: [created, edited, deleted]
   discussion:
-    types: [created, edited, deleted, labeled, unlabeled]
+    types: [created, edited, deleted, transferred, pinned, unpinned, locked, unlocked, category_changed, answered, unanswered]
   discussion_comment:
     types: [created, edited, deleted]
 permissions:
-  contents: write
+  contents: read
   issues: read
   discussions: read
   pages: write
@@ -51,6 +51,8 @@ jobs:
           PULSE_MONITOR_MODE: manual
       - run: npm run build-data && npm run generate-badges
       - run: npm run build
+        env:
+          VITE_BASE_PATH: /PulseStatus/
       - uses: actions/configure-pages@v5.0.0
       - uses: actions/upload-pages-artifact@v3.0.1
         with:

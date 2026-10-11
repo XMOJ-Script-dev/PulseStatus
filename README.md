@@ -80,7 +80,7 @@ The embed reads only public static data, uses text content, enforces a 60-second
 
 ## Publishing an incident or maintenance
 
-Developers can use **Issues → New issue** and choose **Incident report** or **Scheduled maintenance**. The forms add the correct event label automatically and require the operational details needed for review. A maintainer must still verify the content and add the matching `service/*` and `severity/*` labels for an incident before it becomes public. For maintenance, add at least one matching `service/*` label before publication. Maintenance timestamps must include an explicit timezone offset; invalid or incomplete windows are not published as scheduled maintenance. Valid maintenance windows are exported to `maintenance.json` and included in the public summary.
+Developers can use **Issues → New issue** and choose **Bug report**, **Incident report**, or **Scheduled maintenance**. A Bug report is only for a defect in this template or its website implementation: it receives the ordinary `bug` label and is never published as a service incident. The Incident and Maintenance forms add their event label automatically and require the operational details needed for review. A maintainer must still verify the content and add the matching `service/*` and `severity/*` labels for an incident before it becomes public. For maintenance, add at least one matching `service/*` label before publication. Maintenance timestamps must include an explicit timezone offset; invalid or incomplete windows are not published as scheduled maintenance. Valid maintenance windows are exported to `maintenance.json` and included in the public summary.
 
 ## Limitations
 

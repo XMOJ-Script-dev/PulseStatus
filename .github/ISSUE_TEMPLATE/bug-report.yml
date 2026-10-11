@@ -1,0 +1,39 @@
+name: Bug report
+description: Report a problem with the PulseStatus template or website implementation.
+title: "[Bug] "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: "Use this form for a software or template defect. This is not a service incident and will not be published on the public status page. Do not include credentials or private data."
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Describe the incorrect behavior and what you expected instead.
+      placeholder: The History page...
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: Provide the smallest sequence of steps that demonstrates the problem.
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      description: Browser, operating system, deployment path, or relevant workflow run.
+      placeholder: Chrome 140 on Windows 11, project Pages deployment
+    validations:
+      required: true
+  - type: textarea
+    id: evidence
+    attributes:
+      label: Logs or screenshots
+      description: Add sanitized logs or screenshots if they help explain the problem. Never include tokens or secrets.
+    validations:
+      required: false

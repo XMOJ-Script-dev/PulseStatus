@@ -32,7 +32,7 @@ export function incidentCard(incident: Incident): string {
 }
 
 export function serviceCard(service: Service): string {
-  return `<article class="card"><div class="section-heading"><h3>${escapeHtml(service.name)}</h3><span class="pill">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(service.description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
+  return `<article class="card"><div class="section-heading"><h3>${escapeHtml(service.name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(service.description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
 }
 
 export function statusClass(summary: Summary): string {

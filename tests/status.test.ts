@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
 import { maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
 import { applyCheck } from '../src/data/monitor';
-import { groupHistoryByMonth } from '../src/utils/status';
+import { buildSummary, groupHistoryByMonth } from '../src/utils/status';
 import type { Incident } from '../src/types/status';
 
 const config = { publishLabel: 'statuspage/incident', serviceIds: ['web', 'api'], trustedMaintainers: ['maintainer'], trustedAssociations: ['OWNER'] };
@@ -51,5 +51,12 @@ describe('monitoring thresholds', () => {
     expect(down.status).toBe('down');
     const recovering = applyCheck({ consecutiveFailures: 0, consecutiveSuccesses: 1, status: 'down' }, { ok: true, statusCode: 200, latencyMs: 10 }, 2, 2);
     expect(recovering.status).toBe('operational');
+  });
+
+  describe('manual service defaults', () => {
+    it('keeps a manual service operational without making an HTTP request', () => {
+      const summary = buildSummary([], [{ id: 'api', name: 'API', group: 'Core', description: '', status: 'operational', monitorMode: 'manual' }]);
+      expect(summary.overall).toBe('operational');
+    });
   });
 });

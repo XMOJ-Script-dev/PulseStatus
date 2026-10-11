@@ -46,6 +46,11 @@ async function loadNext(): Promise<void> {
 async function init(): Promise<void> {
   try {
     index = await fetchJson<HistoryIndex>(dataUrl('history-index.json'));
+    if (index.months.length === 0) {
+      document.querySelector('#history-status')!.textContent = '';
+      document.querySelector('#months')!.innerHTML = `<p class="card empty">${t('noHistory')}</p>`;
+      return;
+    }
     await loadNext();
     document.querySelector<HTMLButtonElement>('#load-more')!.addEventListener('click', () => void loadNext());
   } catch (error) {

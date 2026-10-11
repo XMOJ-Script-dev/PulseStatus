@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-11T14:08:38.125Z",
+  "generatedAt": "2026-10-11T14:13:24.476Z",
   "services": [
     {
       "id": "web",
@@ -11,8 +11,8 @@
       "checkUrl": "https://xmoj-script.uk",
       "monitorMode": "scheduled",
       "status": "down",
-      "latencyMs": 5016,
-      "lastCheckedAt": "2026-10-11T14:08:33.844Z"
+      "latencyMs": 5018,
+      "lastCheckedAt": "2026-10-11T14:13:19.468Z"
     },
     {
       "id": "api",
@@ -21,7 +21,7 @@
       "description": "The XMOJ-Script API service.",
       "publicUrl": "https://api.xmoj-script.uk",
       "monitorMode": "manual",
-      "status": "manually_reported"
+      "status": "operational"
     },
     {
       "id": "assets",
@@ -30,7 +30,7 @@
       "description": "Public image and asset hosting.",
       "publicUrl": "https://assets.xmoj-script.uk",
       "monitorMode": "manual",
-      "status": "manually_reported"
+      "status": "operational"
     },
     {
       "id": "docs",
@@ -40,9 +40,9 @@
       "publicUrl": "https://docs.xmoj-script.uk",
       "checkUrl": "https://docs.xmoj-script.uk",
       "monitorMode": "scheduled",
-      "status": "operational",
-      "latencyMs": 4278,
-      "lastCheckedAt": "2026-10-11T14:08:38.125Z"
+      "status": "down",
+      "latencyMs": 5006,
+      "lastCheckedAt": "2026-10-11T14:13:24.476Z"
     }
   ]
 }

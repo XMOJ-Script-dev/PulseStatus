@@ -1,6 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import type { GithubComment, GithubIssue, IssueParseConfig } from '../src/data/issues';
 import { issueToIncident } from '../src/data/issues';
+import { issueToMaintenance } from '../src/data/maintenance';
 import type { Incident } from '../src/types/status';
 
 const token = process.env.GITHUB_TOKEN;
@@ -28,8 +29,16 @@ const serviceIds = (process.env.PULSE_SERVICES ?? '').split(',').map((value) => 
 const config: IssueParseConfig = { publishLabel: 'statuspage/incident', serviceIds, trustedMaintainers: (process.env.PULSE_TRUSTED_MAINTAINERS ?? '').split(',').filter(Boolean), trustedAssociations: ['OWNER', 'MEMBER', 'COLLABORATOR'] };
 const issues = await githubPages<GithubIssue>(`/repos/${owner}/${repository}/issues?state=all`);
 const incidents: Incident[] = [];
+const maintenance = [];
 for (const issue of issues) {
   if ('pull_request' in issue) continue;
+  const issueServiceIds = issue.labels.map((label) => label.name.slice(8)).filter((id) => serviceIds.includes(id) && issue.labels.some((candidate) => candidate.name === `service/${id}`));
+  if (issue.labels.some((label) => label.name === 'statuspage/maintenance')) {
+    const event = issueToMaintenance(issue, issueServiceIds);
+    if (event) maintenance.push(event);
+    else console.warn(JSON.stringify({ issue: issue.number, warning: 'invalid maintenance fields or service labels; skipped' }));
+    continue;
+  }
   const comments = await githubPages<GithubComment>(`/repos/${owner}/${repository}/issues/${issue.number}/comments`);
   const incident = issueToIncident(issue, comments, config);
   if (incident) incidents.push(incident);
@@ -39,4 +48,5 @@ await mkdir('public/data/history', { recursive: true });
 const generatedAt = new Date().toISOString();
 await writeFile('public/data/incidents-all.json', JSON.stringify({ schemaVersion: 1, generatedAt, incidents }, null, 2));
 await writeFile('public/data/incidents-active.json', JSON.stringify({ schemaVersion: 1, generatedAt, incidents: incidents.filter((incident) => incident.isActive) }, null, 2));
+await writeFile('public/data/maintenance.json', JSON.stringify({ schemaVersion: 1, generatedAt, maintenance }, null, 2));
 console.log(`Synchronized ${incidents.length} valid incidents.`);

@@ -1,12 +1,15 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { buildSummary, groupHistoryByMonth } from '../src/utils/status';
 import type { Incident, Service } from '../src/types/status';
+import type { Maintenance } from '../src/types/status';
 
 const incidentsData = JSON.parse(await readFile('public/data/incidents-all.json', 'utf8')) as { incidents: Incident[] };
 const servicesData = JSON.parse(await readFile('public/data/services.json', 'utf8')) as { services: Service[] };
+const maintenanceData = JSON.parse(await readFile('public/data/maintenance.json', 'utf8')) as { maintenance: Maintenance[] };
 const generatedAt = new Date().toISOString();
 const incidents = incidentsData.incidents;
 const summary = buildSummary(incidents, servicesData.services, generatedAt);
+summary.activeMaintenanceCount = maintenanceData.maintenance.filter((item) => item.state === 'scheduled' || item.state === 'in_progress').length;
 summary.monitoringMode = (process.env.PULSE_MONITOR_MODE as typeof summary.monitoringMode | undefined) ?? 'manual';
 await writeFile('public/data/summary.json', JSON.stringify(summary, null, 2));
 await writeFile('public/data/summary.js', `window.PulseStatusSummary=${JSON.stringify(summary)};`);

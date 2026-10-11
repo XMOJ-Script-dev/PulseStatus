@@ -1,14 +1,51 @@
 name: Incident report
 description: Publish a confirmed service incident (maintainers apply the required labels).
 title: "[Incident] "
+labels:
+  - statuspage/incident
+  - state/investigating
 body:
   - type: markdown
     attributes:
-      value: "Use this form for a confirmed incident. Do not include credentials or private data."
+      value: "Use this form for a confirmed incident. Do not include credentials or private data. Maintainers must add the matching service/* and severity/* labels before the incident is published."
+  - type: dropdown
+    id: service
+    attributes:
+      label: Affected service
+      description: Select the primary affected service. Add additional service/* labels if more than one service is affected.
+      options:
+        - web
+        - api
+        - assets
+        - docs
+    validations:
+      required: true
+  - type: dropdown
+    id: severity
+    attributes:
+      label: Severity
+      description: Select the customer-visible impact. Maintainers will apply the matching severity/* label.
+      options:
+        - minor
+        - major
+        - critical
+    validations:
+      required: true
   - type: textarea
     id: impact
     attributes:
       label: Impact summary
       description: Describe the customer-visible impact in plain text.
+    validations:
+      required: true
+  - type: dropdown
+    id: state
+    attributes:
+      label: Initial phase
+      options:
+        - investigating
+        - identified
+        - monitoring
+      default: 0
     validations:
       required: true

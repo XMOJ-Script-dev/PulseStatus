@@ -78,6 +78,10 @@ The embed reads only public static data, uses text content, enforces a 60-second
 7. Confirm Discussions are enabled only if announcement sync is desired; an unavailable Discussions API does not block Issue incidents.
 8. Treat generated timestamps as snapshots. GitHub schedule runs can be delayed, and GitHub Pages cannot provide custom CORS headers.
 
+## Publishing an incident or maintenance
+
+Developers can use **Issues → New issue** and choose **Incident report** or **Scheduled maintenance**. The forms add the correct event label automatically and require the operational details needed for review. A maintainer must still verify the content and add the matching `service/*` and `severity/*` labels for an incident before it becomes public. For maintenance, add at least one matching `service/*` label before publication. Maintenance timestamps must include an explicit timezone offset; invalid or incomplete windows are not published as scheduled maintenance. Valid maintenance windows are exported to `maintenance.json` and included in the public summary.
+
 ## Limitations
 
 The initial repository data is an explicit empty/unknown snapshot, not demo health. A failed synchronization must fail the workflow or preserve prior published files; it must never publish green status. Public Issue titles, bodies, comments, labels, URLs, and Discussions are untrusted input and are rendered as text.

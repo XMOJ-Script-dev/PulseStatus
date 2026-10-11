@@ -31,7 +31,9 @@ export function incidentCard(incident: Incident): string {
 }
 
 export function serviceCard(service: Service): string {
-  return `<article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(service.name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(service.description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
+  const name = service.nameI18n?.[language] ?? service.nameI18n?.[language.split('-')[0]] ?? service.name;
+  const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
+  return `<article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
 }
 
 export function statusClass(summary: Summary): string {

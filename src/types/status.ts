@@ -32,8 +32,10 @@ export interface Incident {
 export interface Service {
   id: string;
   name: string;
+  nameI18n?: Record<string, string>;
   group: string;
   description: string;
+  descriptionI18n?: Record<string, string>;
   publicUrl?: string;
   status: ServiceStatus;
   lastCheckedAt?: string;

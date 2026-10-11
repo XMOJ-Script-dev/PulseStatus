@@ -16,6 +16,26 @@ PulseStatus turns GitHub Issues into a trustworthy public information center for
 
 The template deliberately starts with an empty, non-demo data snapshot. It never presents fabricated incidents or health metrics.
 
+### Multilingual service directory
+
+Service names and descriptions support locale maps. Keep the plain `name` and `description` as the fallback, then add any locales your audience needs:
+
+```json
+{
+  "id": "web",
+  "name": "Main website",
+  "nameI18n": { "en": "Main website", "zh": "主站", "ja": "メインサイト" },
+  "description": "The public website.",
+  "descriptionI18n": {
+    "en": "The public website.",
+    "zh": "公开网站。",
+    "ja": "公開ウェブサイト。"
+  }
+}
+```
+
+The browser selects the exact locale first, then its base language (for example `zh-CN` → `zh`), and finally falls back to `name` or `description`.
+
 ## Local development
 
 ```bash

@@ -13,7 +13,6 @@ export function layout(title: string, content: string): string {
     <header class="site-header"><a class="brand" href="${base}">PulseStatus</a>
       <nav aria-label="Primary navigation"><a href="${base}">${t('overview')}</a><a href="${base}history.html">${t('history')}</a><a href="https://github.com/XMOJ-Script-dev/PulseStatus">${t('github')}</a></nav>
     </header><main>${content}</main>
-    <footer>${t('publishedFromGithub')}</footer>
   </div>`;
 }
 
@@ -32,7 +31,7 @@ export function incidentCard(incident: Incident): string {
 }
 
 export function serviceCard(service: Service): string {
-  return `<article class="card"><div class="section-heading"><h3>${escapeHtml(service.name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(service.description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
+  return `<article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(service.name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(service.description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article>`;
 }
 
 export function statusClass(summary: Summary): string {

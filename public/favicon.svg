@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>PulseStatus</title>
+  <rect width="64" height="64" rx="16" fill="#17243d"/>
+  <path d="M9 35h11l5-15 8 29 6-18h16" fill="none" stroke="#8b93ff" stroke-linecap="round" stroke-linejoin="round" stroke-width="6"/>
+  <circle cx="50" cy="31" r="5" fill="#4ade80"/>
+</svg>

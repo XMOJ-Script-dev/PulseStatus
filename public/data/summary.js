@@ -1,1 +1,1 @@
-window.PulseStatusSummary={"schemaVersion":1,"generatedAt":"2026-10-11T13:39:17.381Z","overall":"unknown","hasActiveIncident":false,"activeIncidentCount":0,"affectedServiceCount":0,"activeMaintenanceCount":0,"monitoringMode":"manual","isDemo":false};
+window.PulseStatusSummary={"schemaVersion":1,"generatedAt":"2026-10-11T14:10:55.729Z","overall":"major_outage","hasActiveIncident":false,"activeIncidentCount":0,"affectedServiceCount":0,"activeMaintenanceCount":0,"monitoringMode":"hybrid","isDemo":false};

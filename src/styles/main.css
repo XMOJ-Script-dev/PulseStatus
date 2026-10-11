@@ -12,15 +12,17 @@
   --danger: #dc2626;
 }
 * { box-sizing: border-box; }
+html, body { overflow-x: hidden; }
 body { margin: 0; min-width: 320px; background: #f6f8fc; }
 a { color: var(--brand); }
 button { font: inherit; }
-.site-shell { max-width: 1080px; margin: 0 auto; padding: 0 20px 48px; }
+.site-shell { width: 100%; max-width: 1080px; margin: 0 auto; padding: 0 20px 48px; }
 .site-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 24px 0; }
 .brand { color: inherit; text-decoration: none; font-size: 1.2rem; font-weight: 800; letter-spacing: -.03em; }
-nav { display: flex; gap: 18px; }
+nav { display: flex; flex-wrap: wrap; gap: 18px; }
 nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
 nav a:hover, nav a:focus-visible { color: var(--brand); }
+main, section, .card, .status-banner { min-width: 0; }
 main { display: grid; gap: 24px; }
 .hero, .card, .status-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgb(23 36 61 / 5%); }
 .hero { display: flex; justify-content: space-between; align-items: end; gap: 24px; }
@@ -34,13 +36,14 @@ p { line-height: 1.55; }
 .status-banner.unknown .status-dot { background: var(--muted); }
 .section-heading { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
 .incident-list, .service-grid { display: grid; gap: 12px; }
-.service-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.service-grid { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
 .incident-card { display: block; color: inherit; text-decoration: none; }
 .incident-card:hover, .incident-card:focus-visible { border-color: var(--brand); }
 .incident-meta, .badge-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }
 .pill { display: inline-flex; padding: 4px 9px; border-radius: 999px; background: #eef2ff; color: #4338ca; font-size: .78rem; font-weight: 700; }
 .pill.critical, .pill.major { background: #fef2f2; color: #b91c1c; }
 .pill.minor { background: #fff7ed; color: #b45309; }
+.card h3, .status-banner strong { overflow-wrap: anywhere; }
 .empty, .error { text-align: center; padding: 28px; color: var(--muted); }
 .error { color: #b91c1c; background: #fff7f7; border-radius: 12px; }
 .timeline { display: grid; gap: 0; margin-top: 20px; }

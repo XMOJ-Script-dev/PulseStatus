@@ -1,8 +1,9 @@
 import type { HistoryIndex, Incident } from '../types/status';
 import { dataUrl, formatDate, incidentCard, layout } from './shared';
+import { t } from '../i18n';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-app.innerHTML = layout('History · PulseStatus', '<section class="hero"><div><p class="muted">Resolved events</p><h1>Incident history</h1><p class="muted">Events are grouped by the UTC month in which they started.</p></div></section><div id="history-status" aria-live="polite" class="muted">Loading history…</div><div id="months" class="incident-list"></div><button id="load-more" class="load-more" type="button" hidden>Load more</button>');
+app.innerHTML = layout(`${t('incidentHistory')} · PulseStatus`, `<section class="hero"><div><p class="muted">${t('resolvedEvents')}</p><h1>${t('incidentHistory')}</h1><p class="muted">${t('historyIntro')}</p></div></section><div id="history-status" aria-live="polite" class="muted">${t('loadingHistory')}</div><div id="months" class="incident-list"></div><button id="load-more" class="load-more" type="button" hidden>${t('loadMore')}</button>`);
 
 let index: HistoryIndex;
 let cursor = 0;
@@ -17,7 +18,7 @@ async function fetchJson<T>(url: string): Promise<T> {
 async function loadNext(): Promise<void> {
   const button = document.querySelector<HTMLButtonElement>('#load-more')!;
   button.disabled = true;
-  document.querySelector('#history-status')!.textContent = 'Loading older months…';
+  document.querySelector('#history-status')!.textContent = t('loadingOlder');
   const months = index.months.slice(cursor, cursor + 3);
   try {
     const results = await Promise.all(months.filter((month) => !loaded.has(month.month)).map(async (month) => {
@@ -28,13 +29,13 @@ async function loadNext(): Promise<void> {
     results.forEach(({ month, count, incidents }) => {
       const section = document.createElement('section');
       section.className = 'month-group';
-      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${count} incident${count === 1 ? '' : 's'}</span></div>${incidents.map(incidentCard).join('') || '<p class="card empty">No incidents in this month.</p>'}`;
+      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${count} ${t('incidentsInMonth')}</span></div>${incidents.map(incidentCard).join('') || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
       document.querySelector('#months')!.append(section);
     });
     cursor += months.length;
-    document.querySelector('#history-status')!.textContent = 'History loaded.';
+    document.querySelector('#history-status')!.textContent = t('historyLoaded');
   } catch (error) {
-    document.querySelector('#history-status')!.innerHTML = '<span class="error">This part of history could not be loaded. Try again.</span>';
+    document.querySelector('#history-status')!.innerHTML = `<span class="error">${t('historyLoadFailed')}</span>`;
     console.error(error);
   } finally {
     button.disabled = false;
@@ -48,7 +49,7 @@ async function init(): Promise<void> {
     await loadNext();
     document.querySelector<HTMLButtonElement>('#load-more')!.addEventListener('click', () => void loadNext());
   } catch (error) {
-    document.querySelector('#history-status')!.innerHTML = '<span class="error">History is temporarily unavailable.</span>';
+    document.querySelector('#history-status')!.innerHTML = `<span class="error">${t('historyUnavailable')}</span>`;
     console.error(error);
   }
 }

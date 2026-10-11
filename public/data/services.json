@@ -1,22 +1,48 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-11T13:39:16.348Z",
+  "generatedAt": "2026-10-11T14:08:38.125Z",
   "services": [
     {
       "id": "web",
-      "name": "Web application",
+      "name": "XMOJ-Script main site",
       "group": "Core services",
-      "description": "The public PulseStatus web application.",
-      "monitorMode": "manual",
-      "status": "unknown"
+      "description": "The primary XMOJ-Script website.",
+      "publicUrl": "https://xmoj-script.uk",
+      "checkUrl": "https://xmoj-script.uk",
+      "monitorMode": "scheduled",
+      "status": "down",
+      "latencyMs": 5016,
+      "lastCheckedAt": "2026-10-11T14:08:33.844Z"
     },
     {
       "id": "api",
-      "name": "API",
+      "name": "XMOJ-Script API",
       "group": "Core services",
-      "description": "Public API endpoints.",
+      "description": "The XMOJ-Script API service.",
+      "publicUrl": "https://api.xmoj-script.uk",
       "monitorMode": "manual",
-      "status": "unknown"
+      "status": "manually_reported"
+    },
+    {
+      "id": "assets",
+      "name": "XMOJ-Script assets",
+      "group": "Supporting services",
+      "description": "Public image and asset hosting.",
+      "publicUrl": "https://assets.xmoj-script.uk",
+      "monitorMode": "manual",
+      "status": "manually_reported"
+    },
+    {
+      "id": "docs",
+      "name": "XMOJ-Script documentation",
+      "group": "Supporting services",
+      "description": "Public project documentation.",
+      "publicUrl": "https://docs.xmoj-script.uk",
+      "checkUrl": "https://docs.xmoj-script.uk",
+      "monitorMode": "scheduled",
+      "status": "operational",
+      "latencyMs": 4278,
+      "lastCheckedAt": "2026-10-11T14:08:38.125Z"
     }
   ]
 }

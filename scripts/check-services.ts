@@ -8,7 +8,7 @@ const results: Service[] = [];
 for (const service of services) {
   const monitorMode = service.monitorMode ?? mode;
   if (monitorMode === 'manual' || !service.checkUrl) {
-    results.push({ ...service, status: 'unknown', monitorMode, lastCheckedAt: undefined, latencyMs: undefined });
+    results.push({ ...service, status: 'manually_reported', monitorMode, lastCheckedAt: undefined, latencyMs: undefined });
     continue;
   }
   const started = performance.now();

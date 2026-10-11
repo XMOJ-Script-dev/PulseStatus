@@ -1,7 +1,7 @@
 export type Severity = 'minor' | 'major' | 'critical';
 export type IncidentState = 'investigating' | 'identified' | 'monitoring' | 'resolved';
 export type ServiceStatus = 'operational' | 'degraded' | 'down' | 'unknown' | 'manually_reported';
-export type OverallStatus = 'operational' | 'degraded_performance' | 'partial_outage' | 'major_outage' | 'unknown';
+export type OverallStatus = 'operational' | 'monitoring' | 'degraded_performance' | 'partial_outage' | 'major_outage' | 'unknown';
 
 export interface TimelineEntry {
   id: string;

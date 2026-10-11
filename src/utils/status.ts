@@ -31,6 +31,7 @@ export function overallStatus(incidents: Incident[], services: Service[]): Overa
   if (services.some((s) => s.status === 'down')) return 'major_outage';
   if (services.some((s) => s.status === 'degraded')) return 'degraded_performance';
   if (services.length === 0 || services.some((s) => s.status === 'unknown')) return 'unknown';
+  if (services.some((s) => s.status === 'manually_reported')) return 'monitoring';
   return 'operational';
 }
 

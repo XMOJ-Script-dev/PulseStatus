@@ -118,6 +118,32 @@ Organizations that want a named bot can optionally install a GitHub App such as 
 
 The App needs only repository **Contents: read/write**, **Issues: read/write**, and **Metadata: read-only** permissions. Never put the private key in this repository. See [`docs/github-app.md`](docs/github-app.md) for creation, installation, rotation, and troubleshooting instructions.
 
+### Use your own bot from repository Settings
+
+Every repository owner can use their own GitHub App; the App does not have to be named `PulseStatusBot`.
+
+1. Create or use a GitHub App and install it on this repository.
+2. Open **Repository → Settings → Secrets and variables → Actions**.
+3. Under **Variables**, add:
+
+   ```text
+   Name: PULSE_BOT_MODE
+   Value: app
+   ```
+
+4. Under **Secrets**, add:
+
+   ```text
+   PULSE_APP_ID             = your App's numeric ID
+   PULSE_APP_PRIVATE_KEY    = the complete PEM private key
+   ```
+
+5. Run the workflow from **Actions → PulseStatus → Run workflow**.
+
+The App must be installed on the exact repository and have `Contents: Read and write`, `Issues: Read and write`, and `Metadata: Read-only`. The App ID and private key must belong to the same App. The workflow creates a short-lived installation token and does not save the private key or token in the repository.
+
+To use the default GitHub Actions identity, set `PULSE_BOT_MODE` to `actions` or delete the variable and App secrets. If an App is selected but its installation or credentials are invalid, the workflow emits a warning and falls back to `github-actions` so status publication can continue.
+
 ## Architecture and data flow
 
 PulseStatus has no application server:

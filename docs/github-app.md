@@ -14,6 +14,8 @@ The workflow uses the App only when all three conditions are true:
 
 If `PULSE_BOT_MODE` is missing, set to `actions`, or App credentials are incomplete, the workflow falls back to `GITHUB_TOKEN`.
 
+If credentials are present but the App is not installed on the target repository, token creation also fails over to `GITHUB_TOKEN` with a workflow warning. The deployment continues, but API actions for that run are performed by `github-actions`.
+
 ## Create `PulseStatusBot`
 
 GitHub App creation is an account or organization administration action and cannot be performed by a repository commit. Create it once in the organization that owns the repository:
@@ -50,6 +52,36 @@ Add this repository or organization Variable under **Variables**:
 
 Do not put the App ID or private key in `config/statuspage.yml`, `config/services.json`, README files, workflow source, or generated public data. The private key is credential material and must stay in an encrypted GitHub Secret.
 
+## Let each user choose their own bot
+
+The workflow does not hard-code the App name. Any repository owner can configure their own GitHub App through the repository settings:
+
+1. Install the chosen App on the exact repository.
+2. Add the Actions variable `PULSE_BOT_MODE` with value `app`.
+3. Add the Actions secret `PULSE_APP_ID` with that App's numeric ID.
+4. Add the Actions secret `PULSE_APP_PRIVATE_KEY` with the complete PEM key.
+5. Run the `PulseStatus` workflow manually to verify it.
+
+Organization-level variables and secrets can be used when the same bot should serve multiple repositories. Repository-level values take precedence according to GitHub Actions' normal variable and secret rules.
+
+The user can switch back without a code change:
+
+```text
+PULSE_BOT_MODE=actions
+```
+
+Alternatively, delete the variable and App secrets. With no valid App configuration, the built-in `GITHUB_TOKEN` is used.
+
+### Settings checklist
+
+| Setting | Location | Required value |
+| --- | --- | --- |
+| `PULSE_BOT_MODE` | Actions variable | `app` or `actions` |
+| `PULSE_APP_ID` | Actions secret | Numeric ID belonging to the selected App |
+| `PULSE_APP_PRIVATE_KEY` | Actions secret | Complete PEM private key belonging to the selected App |
+
+Do not enter the private key in the normal repository **Variables** section, because variables are not intended for sensitive credential material.
+
 ## Verify the identity
 
 Run the workflow manually after saving the settings. Confirm:
@@ -59,7 +91,7 @@ Run the workflow manually after saving the settings. Confirm:
 3. `public/data/monitor-state.json` commits show the App identity.
 4. The Pages deployment still succeeds.
 
-If the App is not installed on the repository, or its permissions are too narrow, the workflow will fail with a GitHub API permission error. Set `PULSE_BOT_MODE` back to `actions` to restore the default token while correcting the installation.
+If the App is not installed on the repository, the token step reports a 404 for `/repos/<owner>/<repo>/installation`; install the App on that exact repository and rerun the workflow. If its permissions are too narrow, App-authenticated API calls may fail after token creation. Set `PULSE_BOT_MODE` back to `actions` to restore the default token while correcting the installation.
 
 ## Security and rotation
 

@@ -35,6 +35,7 @@ jobs:
     steps:
       - name: Create optional GitHub App token
         id: automation-token
+        continue-on-error: true
         if: env.PULSE_BOT_MODE == 'app' && env.PULSE_APP_ID != '' && env.PULSE_APP_PRIVATE_KEY != ''
         uses: actions/create-github-app-token@v1.11.0
         with:
@@ -42,6 +43,9 @@ jobs:
           private-key: ${{ env.PULSE_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
           repositories: ${{ github.event.repository.name }}
+      - name: Fall back to github-actions
+        if: steps.automation-token.outcome == 'failure' || (env.PULSE_BOT_MODE == 'app' && (env.PULSE_APP_ID == '' || env.PULSE_APP_PRIVATE_KEY == ''))
+        run: echo "::warning::GitHub App token creation failed. Falling back to the built-in GITHUB_TOKEN. Verify that the App is installed on ${{ github.repository }} and has Contents and Issues write permissions."
       - uses: actions/checkout@v4.2.2
         with:
           token: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}

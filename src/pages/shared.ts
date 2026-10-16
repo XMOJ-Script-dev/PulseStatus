@@ -10,7 +10,7 @@ const defaultSite: SiteConfig = {
   name: 'PulseStatus',
   locale: 'en',
   timezone: 'UTC',
-  favicon: 'favicon.svg',
+  favicon: 'favicon.png',
   companyName: 'PulseStatus',
 };
 const site = window.PulseStatusConfig ?? defaultSite;

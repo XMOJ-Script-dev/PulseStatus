@@ -96,7 +96,7 @@ site:
   name: Example Status
   locale: en
   timezone: Asia/Singapore
-  favicon: favicon.svg
+  favicon: favicon.png
   companyName: Example Company
   companyUrl: https://example.com
   headerText: Public service communications
@@ -106,9 +106,17 @@ site:
       url: https://example.com/support
 ```
 
-`favicon` is a path inside `public/`, such as `favicon.svg` or `brand/favicon.png`. Keep the file in the repository and use a browser-supported favicon format. All user-visible site text is escaped before rendering; URLs should be HTTPS where possible.
+`favicon` is a path inside `public/`, such as `favicon.png` or `brand/favicon.png`. Keep the file in the repository and use a browser-supported favicon format. All user-visible site text is escaped before rendering; URLs should be HTTPS where possible.
 
 See [`docs/configuration.md`](docs/configuration.md) for the complete configuration reference and [`docs/customization.md`](docs/customization.md) for branding and CSS examples.
+
+## Automation identity
+
+By default, all GitHub API work uses the built-in `github-actions` identity. This includes synchronization, automatic Incident creation and closure, monitor-state commits, and the Pages workflow.
+
+Organizations that want a named bot can optionally install a GitHub App such as `PulseStatusBot`. Set the repository or organization variable `PULSE_BOT_MODE=app`, then store `PULSE_APP_ID` and `PULSE_APP_PRIVATE_KEY` as encrypted Actions Secrets. The workflow uses the App only when all credentials are present; otherwise it falls back to `GITHUB_TOKEN`.
+
+The App needs only repository **Contents: read/write**, **Issues: read/write**, and **Metadata: read-only** permissions. Never put the private key in this repository. See [`docs/github-app.md`](docs/github-app.md) for creation, installation, rotation, and troubleshooting instructions.
 
 ## Architecture and data flow
 

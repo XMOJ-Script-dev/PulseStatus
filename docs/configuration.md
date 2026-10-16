@@ -21,7 +21,7 @@ Edit `config/statuspage.yml`:
 | `site.name` | no | Name shown in the browser title and header. Defaults to `PulseStatus`. |
 | `site.locale` | no | Publishing locale metadata. Browser language selection currently supports English and Chinese. |
 | `site.timezone` | no | Operational timezone metadata. Daily uptime remains UTC so reports are deterministic. |
-| `site.favicon` | no | File path relative to `public/`. Defaults to `favicon.svg`. |
+| `site.favicon` | no | File path relative to `public/`. Defaults to `favicon.png`. |
 | `site.companyName` | no | Company or organization name shown in the footer. |
 | `site.companyUrl` | no | Optional link for the company name. |
 | `site.headerText` | no | Optional text displayed below the global header. |

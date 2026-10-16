@@ -13,7 +13,7 @@ const site: SiteConfig = {
   name: sourceConfig.site?.name ?? 'PulseStatus',
   locale: sourceConfig.site?.locale ?? 'en',
   timezone: sourceConfig.site?.timezone ?? 'UTC',
-  favicon: sourceConfig.site?.favicon ?? 'favicon.svg',
+  favicon: sourceConfig.site?.favicon ?? 'favicon.png',
   companyName: sourceConfig.site?.companyName ?? sourceConfig.site?.name ?? 'PulseStatus',
   companyUrl: sourceConfig.site?.companyUrl,
   headerText: sourceConfig.site?.headerText,

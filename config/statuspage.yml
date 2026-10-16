@@ -3,7 +3,7 @@ site:
   locale: en
   timezone: Asia/Singapore
   defaultTheme: system
-  favicon: favicon.svg
+  favicon: favicon.png
   companyName: XMOJ-Script
   companyUrl: https://xmoj-script.uk
   headerText: Public service communications

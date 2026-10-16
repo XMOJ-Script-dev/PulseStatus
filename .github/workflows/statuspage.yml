@@ -28,8 +28,23 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
+    env:
+      PULSE_BOT_MODE: ${{ vars.PULSE_BOT_MODE || 'actions' }}
+      PULSE_APP_ID: ${{ secrets.PULSE_APP_ID }}
+      PULSE_APP_PRIVATE_KEY: ${{ secrets.PULSE_APP_PRIVATE_KEY }}
     steps:
+      - name: Create optional GitHub App token
+        id: automation-token
+        if: env.PULSE_BOT_MODE == 'app' && env.PULSE_APP_ID != '' && env.PULSE_APP_PRIVATE_KEY != ''
+        uses: actions/create-github-app-token@v1.11.0
+        with:
+          app-id: ${{ env.PULSE_APP_ID }}
+          private-key: ${{ env.PULSE_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
       - uses: actions/checkout@v4.2.2
+        with:
+          token: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}
       - uses: actions/setup-node@v4.4.0
         with:
           node-version: 22
@@ -40,7 +55,7 @@ jobs:
       - run: npm run validate-config
       - name: Sync GitHub Issues
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: ${{ github.repository_owner }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           PULSE_SERVICES: web,api,assets,docs
@@ -51,7 +66,7 @@ jobs:
           PULSE_MONITOR_MODE: manual
       - name: Publish automated incidents
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npm run auto-publish-incidents
       - name: Persist monitor state

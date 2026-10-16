@@ -91,6 +91,14 @@ Run the workflow manually after saving the settings. Confirm:
 3. `public/data/monitor-state.json` commits show the App identity.
 4. The Pages deployment still succeeds.
 
+The workflow sets the Git author to the installed App's bot identity when an App token is active. The commit email follows GitHub's App bot format:
+
+```text
+<app-id>+<app-slug>[bot]@users.noreply.github.com
+```
+
+If the workflow falls back to `GITHUB_TOKEN`, the commit is expected to show `github-actions[bot]`. Existing commits are not rewritten; only commits created after this workflow change use the selected identity.
+
 If the App is not installed on the repository, the token step reports a 404 for `/repos/<owner>/<repo>/installation`; install the App on that exact repository and rerun the workflow. If its permissions are too narrow, App-authenticated API calls may fail after token creation. Set `PULSE_BOT_MODE` back to `actions` to restore the default token while correcting the installation.
 
 ## Security and rotation

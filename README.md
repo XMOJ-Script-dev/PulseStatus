@@ -118,6 +118,8 @@ Organizations that want a named bot can optionally install a GitHub App such as 
 
 The App needs only repository **Contents: read/write**, **Issues: read/write**, and **Metadata: read-only** permissions. Never put the private key in this repository. See [`docs/github-app.md`](docs/github-app.md) for creation, installation, rotation, and troubleshooting instructions.
 
+When the App token is active, monitor-state commits use the installed App's bot author and GitHub noreply bot email. If the App token cannot be created, the workflow warning and fallback commit correctly use `github-actions[bot]`. Existing commits keep their original author and are not rewritten.
+
 ### Use your own bot from repository Settings
 
 Every repository owner can use their own GitHub App; the App does not have to be named `PulseStatusBot`.

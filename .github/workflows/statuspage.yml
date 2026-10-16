@@ -74,9 +74,18 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
         run: npm run auto-publish-incidents
       - name: Persist monitor state
+        env:
+          AUTOMATION_TOKEN: ${{ steps.automation-token.outputs.token }}
+          AUTOMATION_APP_SLUG: ${{ steps.automation-token.outputs.app-slug }}
+          AUTOMATION_APP_ID: ${{ env.PULSE_APP_ID }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "$AUTOMATION_TOKEN" ] && [ -n "$AUTOMATION_APP_SLUG" ] && [ -n "$AUTOMATION_APP_ID" ]; then
+            git config user.name "${AUTOMATION_APP_SLUG}[bot]"
+            git config user.email "${AUTOMATION_APP_ID}+${AUTOMATION_APP_SLUG}[bot]@users.noreply.github.com"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          fi
           git add public/data/monitor-state.json
           git diff --cached --quiet || (git commit -m "chore: persist monitor state [skip ci]" && git push)
       - run: npm run build-data && npm run generate-badges

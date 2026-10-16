@@ -14,6 +14,7 @@
     "sync-issues": "tsx scripts/sync-issues.ts",
     "sync-discussions": "tsx scripts/sync-discussions.ts",
     "check-services": "tsx scripts/check-services.ts",
+    "auto-publish-incidents": "tsx scripts/auto-publish-incidents.ts",
     "build-data": "tsx scripts/build-public-data.ts",
     "generate-badges": "tsx scripts/generate-badges.ts",
     "lock-incidents": "tsx scripts/lock-incidents.ts"

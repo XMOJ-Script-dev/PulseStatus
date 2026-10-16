@@ -22,9 +22,13 @@ button { font: inherit; }
 .site-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-size: 1.15rem; font-weight: 800; letter-spacing: -.03em; }
 .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-deep)); font-size: .9rem; }
+.header-controls { display: flex; align-items: center; gap: 18px; }
 nav { display: flex; flex-wrap: wrap; gap: 18px; }
 nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
 nav a:hover, nav a:focus-visible { color: var(--brand); }
+.style-picker { display: inline-flex; align-items: center; gap: 7px; color: var(--muted); font-size: .8rem; font-weight: 700; }
+.style-picker select { border: 1px solid var(--border); border-radius: 8px; padding: 6px 24px 6px 8px; color: inherit; background: var(--surface); font: inherit; }
+.style-picker select:focus-visible, .load-more:focus-visible { outline: 3px solid rgb(99 102 241 / 30%); outline-offset: 2px; }
 main, section, .card, .status-banner { min-width: 0; }
 main { display: grid; gap: 24px; }
 .hero, .card, .status-banner { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgb(23 36 61 / 5%); }
@@ -54,6 +58,8 @@ p { line-height: 1.55; }
 .section-count { color: var(--muted); font-size: .86rem; font-weight: 700; }
 .section-note { color: var(--muted); font-size: .82rem; }
 .service-card { min-height: 232px; display: flex; flex-direction: column; }
+.service-card-link { display: block; color: inherit; text-decoration: none; }
+.service-card-link:hover, .service-card-link:focus-visible { color: inherit; }
 .service-card-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; min-width: 0; }
 .service-card-heading h3 { flex: 1 1 auto; min-width: 0; overflow-wrap: normal; word-break: normal; }
 .service-card-heading .pill { flex: 0 0 auto; white-space: nowrap; }
@@ -78,11 +84,61 @@ p { line-height: 1.55; }
 .timeline-item { border-left: 2px solid var(--border); padding: 0 0 22px 20px; position: relative; }
 .timeline-item::before { content: ""; position: absolute; left: -7px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
 .month-group { display: grid; gap: 12px; }
+.uptime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(310px, 100%), 1fr)); gap: 14px; }
+.uptime-card { display: grid; gap: 20px; }
+.uptime-card-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+.uptime-card-heading h3 { margin: 0; }
+.uptime-card-heading > span { display: grid; justify-items: end; color: var(--success); }
+.uptime-card-heading strong { font-variant-numeric: tabular-nums; font-size: 1.15rem; }
+.uptime-card-heading small { color: var(--muted); font-size: .72rem; }
+.uptime-days { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 4px; }
+.uptime-day { aspect-ratio: 1; min-height: 12px; border: 1px solid rgb(22 101 52 / 10%); border-radius: 3px; background: #15803d; }
+.uptime-day[data-level="good"] { background: #22c55e; }
+.uptime-day[data-level="fair"] { background: #86efac; }
+.uptime-day[data-level="low"] { background: #dcfce7; }
+.uptime-day[data-level="poor"] { background: #fde68a; }
+.uptime-day[data-level="critical"] { background: #f87171; border-color: rgb(153 27 27 / 20%); }
 .load-more { justify-self: center; border: 1px solid var(--border); border-radius: 10px; padding: 10px 16px; background: var(--surface); cursor: pointer; }
 .load-more:disabled { cursor: wait; opacity: .6; }
 footer { margin-top: 32px; color: var(--muted); font-size: .88rem; }
+.site-footer { display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap; margin-top: 10px; padding-top: 22px; border-top: 1px solid var(--border); color: var(--muted); font-size: .85rem; }
+.site-footer p { margin: 0; }
+.footer-links { display: flex; flex-wrap: wrap; gap: 14px; }
+.footer-links a { color: inherit; }
+.service-detail { display: grid; gap: 24px; }
+.service-detail-header { display: flex; justify-content: space-between; gap: 20px; align-items: flex-start; }
+.service-detail-header h1 { margin-bottom: 10px; }
+.service-detail-section { display: grid; gap: 12px; }
+.service-detail-section h2 { margin-bottom: 0; }
+.detail-list { display: grid; gap: 10px; margin: 0; }
+.detail-list > div { display: flex; justify-content: space-between; gap: 18px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.detail-list dt { color: var(--muted); }
+.detail-list dd { margin: 0; text-align: right; }
+.uptime-detail-grid { grid-template-columns: repeat(30, minmax(0, 1fr)); }
+.back-link { font-weight: 700; text-decoration: none; }
+html[data-style="compact"] { --surface: #fff; --border: #cbd5e1; --brand: #0f766e; --brand-deep: #115e59; }
+html[data-style="compact"] .site-shell { max-width: 1200px; }
+html[data-style="compact"] .hero, html[data-style="compact"] .card, html[data-style="compact"] .status-banner { border-radius: 8px; box-shadow: none; }
+html[data-style="compact"] .hero-enterprise { padding: 28px; }
+html[data-style="compact"] .service-card { min-height: 200px; }
+html[data-style="vivid"] { --surface: #fffeff; --border: #ddd6fe; --brand: #7c3aed; --brand-deep: #5b21b6; --success: #059669; }
+html[data-style="vivid"] body { background: linear-gradient(135deg, #f5f3ff, #fdf2f8); }
+html[data-style="vivid"] .hero-enterprise { background: linear-gradient(135deg, #faf5ff 0%, #eff6ff 100%); }
+html[data-style="vivid"] .card, html[data-style="vivid"] .status-banner { box-shadow: 0 12px 30px rgb(91 33 182 / 8%); }
+html[data-style="mono"] { --surface: #fff; --border: #a3a3a3; --muted: #525252; --brand: #262626; --brand-deep: #171717; --success: #404040; --warning: #737373; --danger: #171717; }
+html[data-style="mono"] body { background: #f5f5f5; }
+html[data-style="mono"] .brand-mark, html[data-style="mono"] .hero-enterprise { background: #262626; }
+html[data-style="mono"] .hero-enterprise { color: #fff; }
+html[data-style="mono"] .hero-enterprise .eyebrow, html[data-style="mono"] .hero-enterprise .hero-lede, html[data-style="mono"] .hero-enterprise .trust-line { color: #e5e5e5; }
+html[data-style="mono"] .hero-enterprise::after { background: rgb(255 255 255 / 10%); }
+html[data-style="mono"] .uptime-day { background: #262626; }
+html[data-style="mono"] .uptime-day[data-level="good"] { background: #525252; }
+html[data-style="mono"] .uptime-day[data-level="fair"] { background: #737373; }
+html[data-style="mono"] .uptime-day[data-level="low"] { background: #a3a3a3; }
+html[data-style="mono"] .uptime-day[data-level="poor"] { background: #d4d4d4; }
+html[data-style="mono"] .uptime-day[data-level="critical"] { background: #171717; }
 @media (max-width: 760px) { .service-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-@media (max-width: 640px) { .site-header, .hero { align-items: flex-start; flex-direction: column; } .hero-enterprise { padding: 26px 22px; } .hero-aside { width: 100%; border-top: 1px solid var(--border); border-left: 0; } nav { width: 100%; justify-content: space-between; } .site-shell { padding-inline: 14px; } .service-grid { grid-template-columns: 1fr; } .service-card { min-height: 0; } }
+@media (max-width: 640px) { .site-header, .hero { align-items: flex-start; flex-direction: column; } .header-controls { width: 100%; align-items: flex-start; flex-direction: column; gap: 12px; } .hero-enterprise { padding: 26px 22px; } .hero-aside { width: 100%; border-top: 1px solid var(--border); border-left: 0; } nav { width: 100%; justify-content: space-between; } .site-shell { padding-inline: 14px; } .service-grid { grid-template-columns: 1fr; } .service-card { min-height: 0; } .service-detail-header { flex-direction: column; } .detail-list > div { display: grid; gap: 3px; } .detail-list dd { text-align: left; } }
 @media (prefers-color-scheme: dark) {
   :root { color-scheme: dark; color: #e5e7eb; --surface: #17243d; --border: #31415e; --muted: #a9b6cc; }
   body { background: #101827; }

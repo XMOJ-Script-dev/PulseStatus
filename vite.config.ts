@@ -8,6 +8,7 @@ export default defineConfig({
         overview: 'index.html',
         history: 'history.html',
         incident: 'incident.html',
+        service: 'service.html',
       },
     },
   },

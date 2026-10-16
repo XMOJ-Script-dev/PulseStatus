@@ -3,7 +3,7 @@ on:
   push:
     branches: [main]
   schedule:
-    - cron: "*/15 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch:
   issues:
     types: [opened, edited, labeled, unlabeled, closed, reopened]
@@ -14,8 +14,8 @@ on:
   discussion_comment:
     types: [created, edited, deleted]
 permissions:
-  contents: read
-  issues: read
+  contents: write
+  issues: write
   discussions: read
   pages: write
   id-token: write
@@ -49,6 +49,17 @@ jobs:
       - run: npm run check-services
         env:
           PULSE_MONITOR_MODE: manual
+      - name: Publish automated incidents
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: npm run auto-publish-incidents
+      - name: Persist monitor state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/monitor-state.json
+          git diff --cached --quiet || (git commit -m "chore: persist monitor state [skip ci]" && git push)
       - run: npm run build-data && npm run generate-badges
         env:
           PULSE_MONITOR_MODE: hybrid

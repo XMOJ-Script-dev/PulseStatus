@@ -43,6 +43,7 @@ export interface Service {
   uptime30d?: number;
   uptime90d?: number;
   monitorMode: 'scheduled' | 'manual' | 'hybrid';
+  checkIntervalMinutes?: number;
 }
 
 export interface Summary {
@@ -67,6 +68,40 @@ export interface HistoryIndex {
   schemaVersion: 1;
   generatedAt: string;
   months: HistoryMonth[];
+}
+
+export interface DailyUptime {
+  date: string;
+  services: Record<string, number>;
+}
+
+export interface UptimeHistory {
+  schemaVersion: 1;
+  generatedAt: string;
+  days: DailyUptime[];
+}
+
+export interface SiteConfig {
+  name: string;
+  locale: string;
+  timezone: string;
+  favicon: string;
+  companyName: string;
+  companyUrl?: string;
+  headerText?: string;
+  footerText?: string;
+  footerLinks?: Array<{ label: string; url: string }>;
+}
+
+export interface MonitorState {
+  generatedAt: string;
+  services: Record<string, {
+    consecutiveFailures: number;
+    consecutiveSuccesses: number;
+    autoIncidentNumber?: number;
+    lastProbeAt?: string;
+    probeDue?: boolean;
+  }>;
 }
 
 export interface Maintenance {

@@ -14,6 +14,7 @@
     },
     "publicUrl": "https://xmoj-script.uk",
     "checkUrl": "https://xmoj-script.uk",
+    "checkIntervalMinutes": 5,
     "monitorMode": "scheduled"
   },
   {
@@ -30,6 +31,7 @@
       "zh": "XMOJ-Script 的 API 服务。"
     },
     "publicUrl": "https://api.xmoj-script.uk",
+    "checkIntervalMinutes": 10,
     "monitorMode": "manual"
   },
   {
@@ -46,6 +48,7 @@
       "zh": "公开图片和资源托管服务。"
     },
     "publicUrl": "https://assets.xmoj-script.uk",
+    "checkIntervalMinutes": 15,
     "monitorMode": "manual"
   },
   {
@@ -63,6 +66,7 @@
     },
     "publicUrl": "https://docs.xmoj-script.uk",
     "checkUrl": "https://docs.xmoj-script.uk",
+    "checkIntervalMinutes": 5,
     "monitorMode": "scheduled"
   }
 ]

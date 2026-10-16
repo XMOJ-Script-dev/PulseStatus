@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
 import { maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
 import { applyCheck } from '../src/data/monitor';
-import { buildSummary, groupHistoryByMonth } from '../src/utils/status';
+import { buildDailyUptime, buildSummary, groupHistoryByMonth } from '../src/utils/status';
 import type { Incident } from '../src/types/status';
 
 const config = { publishLabel: 'statuspage/incident', serviceIds: ['web', 'api'], trustedMaintainers: ['maintainer'], trustedAssociations: ['OWNER'] };
@@ -44,6 +44,15 @@ describe('history and maintenance', () => {
     expect(parseMaintenanceTimes('no timestamps')).toBeNull();
     expect(parseMaintenanceTimes('### Starts at\n2026-10-15T02:00:00+08:00\n### Ends at\n2026-10-15T03:00:00+08:00\n### Timezone\nAsia/Singapore')).not.toBeNull();
   });
+
+  it('calculates daily uptime from merged downtime intervals', () => {
+    const incidents: Incident[] = [
+      { id: '1', number: 1, title: '', url: '', bodySummary: '', startedAt: '2026-10-15T01:00:00Z', updatedAt: '2026-10-15T04:00:00Z', closedAt: '2026-10-15T04:00:00Z', state: 'resolved', severity: 'major', serviceIds: ['api'], isActive: false, timeline: [] },
+      { id: '2', number: 2, title: '', url: '', bodySummary: '', startedAt: '2026-10-15T03:00:00Z', updatedAt: '2026-10-15T05:00:00Z', closedAt: '2026-10-15T05:00:00Z', state: 'resolved', severity: 'major', serviceIds: ['api'], isActive: false, timeline: [] },
+    ];
+    const [day] = buildDailyUptime(incidents, ['api', 'web'], '2026-10-16T00:00:00Z', 1);
+    expect(day).toEqual({ date: '2026-10-15', services: { api: 83.333, web: 100 } });
+  });
 });
 
 describe('monitoring thresholds', () => {
@@ -58,6 +67,13 @@ describe('monitoring thresholds', () => {
     it('keeps a manual service operational without making an HTTP request', () => {
       const summary = buildSummary([], [{ id: 'api', name: 'API', group: 'Core', description: '', status: 'operational', monitorMode: 'manual' }]);
       expect(summary.overall).toBe('operational');
+    });
+
+    it('reports an outage from a down service even without a published incident', () => {
+      const summary = buildSummary([], [{ id: 'web', name: 'Web', group: 'Core', description: '', status: 'down', monitorMode: 'scheduled' }]);
+      expect(summary.overall).toBe('major_outage');
+      expect(summary.activeIncidentCount).toBe(0);
+      expect(summary.hasActiveIncident).toBe(false);
     });
   });
 });

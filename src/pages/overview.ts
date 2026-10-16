@@ -21,10 +21,11 @@ async function render(): Promise<void> {
     ]);
     const status = document.querySelector<HTMLDivElement>('#status')!;
     status.className = `status-banner ${statusClass(summary)}`;
-    status.innerHTML = `<span class="status-dot"></span><div><strong>${statusLabel(summary.overall)}</strong><span class="status-context">${t('updated')} ${formatDate(summary.generatedAt)}</span></div>`;
+    const outageWithoutIncident = summary.activeIncidentCount === 0 && ['major_outage', 'partial_outage', 'degraded_performance'].includes(summary.overall);
+    status.innerHTML = `<span class="status-dot"></span><div><strong>${statusLabel(summary.overall)}</strong><span class="status-context">${outageWithoutIncident ? t('noPublishedIncidentForOutage') : `${t('updated')} ${formatDate(summary.generatedAt)}`}</span></div>`;
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
-    document.querySelector('#incidents')!.innerHTML = active.length ? active.map(incidentCard).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${t('noIncidentsNote')}</span></p>`;
+    document.querySelector('#incidents')!.innerHTML = active.length ? active.map(incidentCard).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${outageWithoutIncident ? t('noPublishedIncidentForOutage') : t('noIncidentsNote')}</span></p>`;
     document.querySelector('#services')!.innerHTML = services.services.length ? services.services.map(serviceCard).join('') : '<p class="card empty">No service data available</p>';
   } catch (error) {
     document.querySelector('#status')!.outerHTML = `<div class="status-banner unknown error" role="alert"><span class="status-dot"></span><strong>${t('statusUnavailable')}</strong></div>`;

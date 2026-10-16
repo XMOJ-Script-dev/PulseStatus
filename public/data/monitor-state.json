@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-10-16T15:22:51.579Z",
+  "services": {
+    "web": {
+      "consecutiveFailures": 0,
+      "consecutiveSuccesses": 1,
+      "lastProbeAt": "2026-10-16T15:22:49.873Z",
+      "probeDue": false
+    },
+    "docs": {
+      "consecutiveFailures": 0,
+      "consecutiveSuccesses": 1,
+      "lastProbeAt": "2026-10-16T15:22:49.873Z",
+      "probeDue": false
+    }
+  }
+}

@@ -84,7 +84,7 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${AUTOMATION_TOKEN}" \
             -H "X-GitHub-Api-Version: 2022-11-28" \
-            "https://api.github.com/users/${AUTOMATION_APP_SLUG}[bot]" | jq -r '.id')"
+            "https://api.github.com/users/${AUTOMATION_APP_SLUG}%5Bbot%5D" | jq -r '.id')"
           test -n "$bot_id" && test "$bot_id" != "null"
           echo "bot-id=$bot_id" >> "$GITHUB_OUTPUT"
       - name: Persist monitor state

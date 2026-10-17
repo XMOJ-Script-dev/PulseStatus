@@ -91,6 +91,7 @@ export interface SiteConfig {
   headerText?: string;
   footerText?: string;
   footerLinks?: Array<{ label: string; url: string }>;
+  theme: 'modern' | 'compact' | 'vivid' | 'mono';
 }
 
 export interface MonitorState {
@@ -102,6 +103,18 @@ export interface MonitorState {
     lastProbeAt?: string;
     probeDue?: boolean;
   }>;
+}
+
+export interface ProbeResult {
+  checkedAt: string;
+  status: ServiceStatus;
+  latencyMs?: number;
+  statusCode?: number;
+}
+
+export interface ProbeHistory {
+  schemaVersion: 1;
+  services: Record<string, ProbeResult[]>;
 }
 
 export interface Maintenance {

@@ -14,7 +14,7 @@
     },
     "publicUrl": "https://xmoj-script.uk",
     "checkUrl": "https://xmoj-script.uk",
-    "checkIntervalMinutes": 5,
+    "checkIntervalMinutes": 15,
     "monitorMode": "scheduled"
   },
   {
@@ -66,7 +66,7 @@
     },
     "publicUrl": "https://docs.xmoj-script.uk",
     "checkUrl": "https://docs.xmoj-script.uk",
-    "checkIntervalMinutes": 5,
+    "checkIntervalMinutes": 15,
     "monitorMode": "scheduled"
   }
 ]

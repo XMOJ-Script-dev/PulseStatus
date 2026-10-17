@@ -19,6 +19,7 @@ const site: SiteConfig = {
   headerText: sourceConfig.site?.headerText,
   footerText: sourceConfig.site?.footerText,
   footerLinks: sourceConfig.site?.footerLinks,
+  theme: sourceConfig.site?.theme ?? 'modern',
 };
 const generatedAt = new Date().toISOString();
 const incidents = incidentsData.incidents;

@@ -3,7 +3,7 @@ import { parse } from 'yaml';
 import type { Service } from '../src/types/status';
 
 interface StatusConfig {
-  site?: { name?: string; timezone?: string };
+  site?: { name?: string; timezone?: string; theme?: string };
   monitoring?: { mode?: string; timeoutMs?: number; probeIntervalMinutes?: number; autoPublishIncident?: boolean; failuresToIncident?: number; recoverySuccessesToCloseIncident?: number };
   issues?: { autoIncidentMentions?: string[]; autoIncidentSeverity?: string };
   history?: { initialMonths?: number; monthsPerLoad?: number };
@@ -19,6 +19,7 @@ const probeIntervalMinutes = config.monitoring?.probeIntervalMinutes;
 const failuresToIncident = config.monitoring?.failuresToIncident;
 const recoverySuccessesToCloseIncident = config.monitoring?.recoverySuccessesToCloseIncident;
 if (!config.site?.name || !config.site?.timezone) errors.push('site.name and site.timezone are required');
+if (!['modern', 'compact', 'vivid', 'mono'].includes(config.site?.theme ?? '')) errors.push('site.theme must be modern, compact, vivid, or mono');
 if (!mode || !['scheduled', 'manual', 'hybrid'].includes(mode)) errors.push('monitoring.mode must be scheduled, manual, or hybrid');
 if (typeof initialMonths !== 'number' || !Number.isInteger(initialMonths) || initialMonths < 1) errors.push('history.initialMonths must be a positive integer');
 if (monthsPerLoad !== 3) errors.push('history.monthsPerLoad must be 3');

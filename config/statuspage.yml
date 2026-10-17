@@ -2,7 +2,7 @@ site:
   name: PulseStatus
   locale: en
   timezone: Asia/Singapore
-  defaultTheme: system
+  theme: modern
   favicon: favicon.png
   companyName: XMOJ-Script
   companyUrl: https://xmoj-script.uk

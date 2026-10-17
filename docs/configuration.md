@@ -22,6 +22,7 @@ Edit `config/statuspage.yml`:
 | `site.locale` | no | Publishing locale metadata. Browser language selection currently supports English and Chinese. |
 | `site.timezone` | no | Operational timezone metadata. Daily uptime remains UTC so reports are deterministic. |
 | `site.favicon` | no | File path relative to `public/`. Defaults to `favicon.png`. |
+| `site.theme` | yes | Administrator-selected built-in template: `modern`, `compact`, `vivid`, or `mono`. |
 | `site.companyName` | no | Company or organization name shown in the footer. |
 | `site.companyUrl` | no | Optional link for the company name. |
 | `site.headerText` | no | Optional text displayed below the global header. |
@@ -35,6 +36,7 @@ site:
   name: Acme Service Status
   locale: en
   timezone: America/Los_Angeles
+  theme: modern
   favicon: brand/acme-favicon.svg
   companyName: Acme Inc.
   companyUrl: https://acme.example
@@ -50,6 +52,8 @@ site:
 Place `brand/acme-favicon.svg` at `public/brand/acme-favicon.svg`. Do not use a filesystem path outside `public/`.
 
 The build emits this configuration as `public/data/site.js`. Each HTML entry point loads it before its page module, allowing the same identity and footer to appear on overview, history, incident, and service pages. If `site.js` is missing in a local build, run `npm run build-data`.
+
+The theme is a deployment setting, not a visitor preference. All visitors receive the same `site.theme` value. For organization-specific styling, edit `src/styles/custom.css`; it is bundled after the built-in stylesheet and is therefore the supported override layer.
 
 ## Services
 
@@ -105,6 +109,8 @@ Individual services can override it:
 ```
 
 The check script persists `lastProbeAt` in `public/data/monitor-state.json`. When an interval has not elapsed, it reuses the last result and does not increment consecutive failure or recovery counters. Counters therefore represent real requests, not workflow invocations. Values below five minutes cannot create more checks with GitHub-hosted schedules; use a dedicated external monitor for sub-five-minute requirements.
+
+Every real request also appends a record to `public/data/probe-history.json`. Existing records are not edited when a new check runs. Each record contains `checkedAt`, the resulting service status, optional `statusCode`, and optional `latencyMs`; manual services are intentionally absent from this history. The service detail page displays the most recent probe records separately from incident-derived uptime.
 
 ## Incident and maintenance publishing
 

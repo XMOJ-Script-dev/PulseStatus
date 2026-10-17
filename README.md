@@ -110,6 +110,8 @@ site:
 
 See [`docs/configuration.md`](docs/configuration.md) for the complete configuration reference and [`docs/customization.md`](docs/customization.md) for branding and CSS examples.
 
+For the complete runtime flow, data lifecycle, monitoring state machine, Mermaid diagrams, and responsibility of every project file, see [`docs/architecture.md`](docs/architecture.md).
+
 ## Automation identity
 
 By default, all GitHub API work uses the built-in `github-actions` identity. This includes synchronization, automatic Incident creation and closure, monitor-state commits, and the Pages workflow.
@@ -118,7 +120,9 @@ Organizations that want a named bot can optionally install a GitHub App such as 
 
 The App needs only repository **Contents: read/write**, **Issues: read/write**, and **Metadata: read-only** permissions. Never put the private key in this repository. See [`docs/github-app.md`](docs/github-app.md) for creation, installation, rotation, and troubleshooting instructions.
 
-When the App token is active, monitor-state commits use the installed App's bot author and GitHub noreply bot email. If the App token cannot be created, the workflow warning and fallback commit correctly use `github-actions[bot]`. Existing commits keep their original author and are not rewritten.
+When the App token is active, monitor-state commits resolve the installed App's bot user ID and use the recognized GitHub App bot email. Do not use the App ID or OAuth client ID as the email prefix. If the App token cannot be created, the workflow warning and fallback commit correctly use `github-actions[bot]`. Existing commits keep their original author and are not rewritten.
+
+GitHub Pages configuration and deployment remain platform Actions operations and use the built-in workflow token; repository commits and Issue API operations use the selected App identity.
 
 ### Use your own bot from repository Settings
 
@@ -227,7 +231,7 @@ Put the favicon inside `public/`, update `site.favicon`, then run `npm run build
 
 ### Custom CSS is not visible
 
-Edit `src/styles/custom.css`, not `dist/` or generated files. Check selector specificity, confirm the file is included after `main.css`, and inspect all four `data-style` values if the style picker is enabled. Preserve focus outlines and color contrast.
+Edit `src/styles/custom.css`, not `dist/` or generated files. Check selector specificity, confirm the file is included after `main.css`, and inspect the configured `data-style` value. Preserve focus outlines and color contrast.
 
 ## Publishing data
 
@@ -268,7 +272,7 @@ To override the default for one service, add `checkIntervalMinutes` to [`config/
   "id": "web",
   "checkUrl": "https://example.com/health",
   "monitorMode": "scheduled",
-  "checkIntervalMinutes": 5
+  "checkIntervalMinutes": 15
 }
 ```
 
@@ -280,11 +284,13 @@ Every service card links to `service.html?id=<service-id>`. The detail page incl
 
 Daily uptime is incident-derived: the builder merges overlapping incident intervals per service, subtracts downtime from each UTC day, and writes [`public/data/uptime.json`](public/data/uptime.json). An open incident extends to snapshot generation time. A day without published downtime is shown as 100%, but this must not be interpreted as probe coverage when the service uses manual monitoring.
 
+Actual scheduled and hybrid probe results are stored separately in [`public/data/probe-history.json`](public/data/probe-history.json). Each real request appends one immutable result with its timestamp, status, HTTP status code, and latency. Skipped checks do not append a record, and manual services never receive probe records.
+
 ## Historical uptime and display styles
 
 The History page shows every configured service's last 90 UTC days. `npm run build-data` writes `public/data/uptime.json` from the published incident data: for each service and day, it subtracts the union of overlapping incident durations from that day's elapsed time. Open incidents are calculated through the time the snapshot is generated. This means the view reports incident-derived uptime rather than inventing probe coverage.
 
-Each daily square is progressively lighter green as uptime falls, then turns yellow and red for significant downtime. Visitors can select Modern, Compact, Vivid, or Monochrome from the header; the choice is retained in their browser.
+Each daily square is progressively lighter green as uptime falls, then turns yellow and red for significant downtime. Administrators select one built-in template in `config/statuspage.yml`; visitors cannot change the published CSS. Organization-specific CSS belongs in `src/styles/custom.css`.
 
 ## Badges and embed
 

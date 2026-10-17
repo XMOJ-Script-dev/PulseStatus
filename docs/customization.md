@@ -6,7 +6,7 @@ This guide covers visual customization without changing application logic. Sourc
 
 Edit [`src/styles/custom.css`](../src/styles/custom.css). It is imported after `main.css`, so it is the supported place for repository-specific changes. Do not edit generated files under `dist/` or generated data under `public/data/`.
 
-The built-in style picker sets `data-style` on the root element to `modern`, `compact`, `vivid`, or `mono`. Target one built-in style without affecting the others:
+The administrator-selected `site.theme` sets `data-style` on the root element to `modern`, `compact`, `vivid`, or `mono`. Target one built-in style without affecting the others:
 
 ```css
 html[data-style="modern"] {
@@ -33,7 +33,7 @@ Available core variables include `--surface`, `--border`, `--muted`, `--brand`, 
 
 ## Theme design tokens
 
-The style picker changes `html[data-style]` and persists the selection in `localStorage` under `pulsestatus-style`. A repository override should remain compatible with all four values:
+The published site has one administrator-selected theme; visitors do not have a CSS selector or local theme preference. A repository override can target the configured theme, or remain compatible with all four values:
 
 ```css
 html[data-style="vivid"] .brand-mark {
@@ -99,7 +99,7 @@ Open `/`, `/history.html`, and `/service.html?id=web` locally. Select each built
 ## Accessibility and performance checklist
 
 - Keep body text and muted text at readable contrast against `--surface`.
-- Preserve `:focus-visible` outlines for links, buttons, and the style selector.
+- Preserve `:focus-visible` outlines for links and buttons.
 - Test at 320px, 640px, and desktop widths.
 - Use `font-display: swap` for custom fonts and avoid large background images.
 - Do not hide active incidents, maintenance, or unavailable-state messages.
@@ -109,6 +109,6 @@ Open `/`, `/history.html`, and `/service.html?id=web` locally. Select each built
 
 1. Edit `src/styles/custom.css`.
 2. Run `npm run typecheck`, `npm test`, and `npm run build`.
-3. Open all four pages locally and select Modern, Compact, Vivid, and Monochrome.
+3. Open all four pages locally and verify the administrator-selected theme is applied consistently.
 4. Check the generated `dist/assets/` output and test the deployed base path if using GitHub Pages.
 5. Commit the source CSS and any assets under `public/`; never commit a manually edited `dist/` file.

@@ -1,7 +1,6 @@
 const translations = {
   en: {
     overview: 'Overview', history: 'History', github: 'GitHub', serviceStatus: 'Service status',
-    style: 'Style', styleModern: 'Modern', styleCompact: 'Compact', styleVivid: 'Vivid', styleMono: 'Monochrome',
     publicStatus: 'Public service communications', trustedUpdates: 'Verified updates from the operations team',
     incidentCenter: 'Incident center', serviceDirectory: 'Service directory',
     noIncidentsNote: 'There are no active incidents affecting our services.',
@@ -17,6 +16,7 @@ const translations = {
     uptimeUnavailable: 'Uptime history is temporarily unavailable.', uptimeAsOf: 'Last calculated', uptimeAverage: '90-day uptime',
     uptimeLegend: 'Daily uptime', uptimeDay: 'Uptime for',
     serviceDetails: 'Service details', relatedIncidents: 'Related incidents', relatedMaintenance: 'Related maintenance',
+    probeHistory: 'Probe history', noProbeHistory: 'No automatic probe results have been recorded for this service.',
     noRelatedIncidents: 'No incidents have been published for this service.', noRelatedMaintenance: 'No maintenance has been published for this service.',
     scheduled: 'Scheduled', inProgress: 'In progress', completed: 'Completed', cancelled: 'Cancelled',
     historyUnavailable: 'History is temporarily unavailable.', historyLoadFailed: 'This part of history could not be loaded. Try again.',
@@ -35,7 +35,6 @@ const translations = {
   },
   zh: {
     overview: '概览', history: '历史记录', github: 'GitHub', serviceStatus: '服务状态',
-    style: '样式', styleModern: '现代', styleCompact: '紧凑', styleVivid: '鲜明', styleMono: '单色',
     publicStatus: '对外服务信息中心', trustedUpdates: '来自运营团队的可信更新',
     incidentCenter: '事故中心', serviceDirectory: '服务目录',
     noIncidentsNote: '当前没有影响服务的事故。',
@@ -51,6 +50,7 @@ const translations = {
     uptimeUnavailable: '可用率历史暂时无法加载。', uptimeAsOf: '最后计算时间', uptimeAverage: '90 天可用率',
     uptimeLegend: '每日可用率', uptimeDay: '可用率日期',
     serviceDetails: '服务详情', relatedIncidents: '相关事故', relatedMaintenance: '相关维护',
+    probeHistory: '探测历史', noProbeHistory: '该服务暂无自动探测结果。',
     noRelatedIncidents: '该服务暂无已发布事故。', noRelatedMaintenance: '该服务暂无已发布维护。',
     scheduled: '已安排', inProgress: '进行中', completed: '已完成', cancelled: '已取消',
     historyUnavailable: '历史记录暂时无法加载。', historyLoadFailed: '这一部分历史记录加载失败，请重试。',

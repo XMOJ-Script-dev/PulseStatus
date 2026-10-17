@@ -1,4 +1,4 @@
-import type { Incident, Maintenance, Service, UptimeHistory } from '../types/status';
+import type { Incident, Maintenance, ProbeHistory, Service, UptimeHistory } from '../types/status';
 import { dataUrl, formatDate, incidentCard, layout, serviceName } from './shared';
 import { escapeHtml } from '../utils/status';
 import { language, statusLabel, t } from '../i18n';
@@ -24,11 +24,12 @@ function uptimeLevel(uptime: number): string {
 
 async function init(): Promise<void> {
   try {
-    const [servicesData, uptime, incidentsData, maintenanceData] = await Promise.all([
+    const [servicesData, uptime, incidentsData, maintenanceData, probeHistory] = await Promise.all([
       fetchJson<{ services: Service[] }>('services.json'),
       fetchJson<UptimeHistory>('uptime.json'),
       fetchJson<{ incidents: Incident[] }>('incidents-all.json'),
       fetchJson<{ maintenance: Maintenance[] }>('maintenance.json'),
+      fetchJson<ProbeHistory>('probe-history.json'),
     ]);
     const service = servicesData.services.find((item) => item.id === serviceId);
     if (!service) {
@@ -48,8 +49,10 @@ async function init(): Promise<void> {
     const incidents = incidentsData.incidents.filter((incident) => incident.serviceIds.includes(service.id)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     const maintenance = maintenanceData.maintenance.filter((item) => item.serviceIds.includes(service.id)).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     const maintenanceCards = maintenance.map((item) => `<article class="card incident-card"><div class="incident-meta"><span class="pill">${escapeHtml(statusLabel(item.state))}</span></div><h3>${escapeHtml(item.title)}</h3><p class="muted">${formatDate(item.startsAt)} → ${formatDate(item.endsAt)}</p><a href="${escapeHtml(item.url)}" rel="noreferrer">${t('viewOnGithub')}</a></article>`).join('');
+    const probes = (probeHistory.services[service.id] ?? []).slice(-90);
+    const probeCells = probes.map((probe) => `<span class="probe-result" data-status="${probe.status}" title="${formatDate(probe.checkedAt)} · ${statusLabel(probe.status)}${probe.latencyMs === undefined ? '' : ` · ${probe.latencyMs} ms`}" aria-label="${formatDate(probe.checkedAt)}: ${statusLabel(probe.status)}"></span>`).join('');
     const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
-    document.querySelector('#service-content')!.outerHTML = `<div class="service-detail"><a class="back-link" href="${import.meta.env.BASE_URL}">← ${t('overview')}</a><section class="service-detail-header"><div><p class="eyebrow">${t('serviceDetails')}</p><h1>${escapeHtml(name)}</h1><p class="muted">${escapeHtml(description)}</p></div><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></section><dl class="detail-list"><div><dt>${t('uptimeAverage')}</dt><dd>${average === null ? t('limitedMonitoring') : `${average.toFixed(3)}%`}</dd></div><div><dt>${t('checked')}</dt><dd>${service.lastCheckedAt ? formatDate(service.lastCheckedAt) : t('manualMonitoring')}</dd></div>${service.publicUrl ? `<div><dt>URL</dt><dd><a href="${escapeHtml(service.publicUrl)}" rel="noreferrer">${escapeHtml(service.publicUrl)}</a></dd></div>` : ''}</dl><section class="service-detail-section"><div class="section-heading"><h2>${t('uptimeHistory')}</h2><span class="section-note">${t('uptimeAsOf')}: ${formatDate(uptime.generatedAt)}</span></div><div class="uptime-days uptime-detail-grid" role="img" aria-label="${t('uptimeLegend')} — ${escapeHtml(name)}">${cells}</div></section><section class="service-detail-section"><h2>${t('relatedIncidents')}</h2><div class="incident-list">${incidents.map(incidentCard).join('') || `<p class="card empty">${t('noRelatedIncidents')}</p>`}</div></section><section class="service-detail-section"><h2>${t('relatedMaintenance')}</h2><div class="incident-list">${maintenanceCards || `<p class="card empty">${t('noRelatedMaintenance')}</p>`}</div></section></div>`;
+    document.querySelector('#service-content')!.outerHTML = `<div class="service-detail"><a class="back-link" href="${import.meta.env.BASE_URL}">← ${t('overview')}</a><section class="service-detail-header"><div><p class="eyebrow">${t('serviceDetails')}</p><h1>${escapeHtml(name)}</h1><p class="muted">${escapeHtml(description)}</p></div><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></section><dl class="detail-list"><div><dt>${t('uptimeAverage')}</dt><dd>${average === null ? t('limitedMonitoring') : `${average.toFixed(3)}%`}</dd></div><div><dt>${t('checked')}</dt><dd>${service.lastCheckedAt ? formatDate(service.lastCheckedAt) : t('manualMonitoring')}</dd></div>${service.publicUrl ? `<div><dt>URL</dt><dd><a href="${escapeHtml(service.publicUrl)}" rel="noreferrer">${escapeHtml(service.publicUrl)}</a></dd></div>` : ''}</dl><section class="service-detail-section"><div class="section-heading"><h2>${t('uptimeHistory')}</h2><span class="section-note">${t('uptimeAsOf')}: ${formatDate(uptime.generatedAt)}</span></div><div class="uptime-days uptime-detail-grid" role="img" aria-label="${t('uptimeLegend')} — ${escapeHtml(name)}">${cells}</div></section><section class="service-detail-section"><h2>${t('probeHistory')}</h2><div class="probe-history-grid" role="img" aria-label="${t('probeHistory')} — ${escapeHtml(name)}">${probeCells || `<p class="card empty">${t('noProbeHistory')}</p>`}</div></section><section class="service-detail-section"><h2>${t('relatedIncidents')}</h2><div class="incident-list">${incidents.map(incidentCard).join('') || `<p class="card empty">${t('noRelatedIncidents')}</p>`}</div></section><section class="service-detail-section"><h2>${t('relatedMaintenance')}</h2><div class="incident-list">${maintenanceCards || `<p class="card empty">${t('noRelatedMaintenance')}</p>`}</div></section></div>`;
   } catch (error) {
     document.querySelector('#service-content')!.innerHTML = `<div class="error">${t('uptimeUnavailable')}</div>`;
     console.error(error);

@@ -1,6 +1,6 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parse } from 'yaml';
-import type { MonitorState, Service } from '../src/types/status';
+import type { MonitorState, ProbeHistory, Service } from '../src/types/status';
 
 const services = JSON.parse(await readFile('config/services.json', 'utf8')) as Array<Service & { checkUrl?: string }>;
 const config = parse(await readFile('config/statuspage.yml', 'utf8')) as { monitoring?: { probeIntervalMinutes?: number } };
@@ -16,6 +16,12 @@ try {
 let monitorState: MonitorState = { generatedAt: new Date(0).toISOString(), services: {} };
 try {
   monitorState = JSON.parse(await readFile('public/data/monitor-state.json', 'utf8')) as MonitorState;
+} catch (error) {
+  if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
+}
+let probeHistory: ProbeHistory = { schemaVersion: 1, services: {} };
+try {
+  probeHistory = JSON.parse(await readFile('public/data/probe-history.json', 'utf8')) as ProbeHistory;
 } catch (error) {
   if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
 }
@@ -41,9 +47,11 @@ for (const service of services) {
   const started = performance.now();
   let status: Service['status'] = 'unknown';
   let latencyMs: number | undefined;
+  let statusCode: number | undefined;
   try {
     const response = await fetch(service.checkUrl, { signal: AbortSignal.timeout(timeoutMs) });
     latencyMs = Math.round(performance.now() - started);
+    statusCode = response.status;
     status = response.ok ? 'operational' : 'degraded';
   } catch {
     latencyMs = Math.round(performance.now() - started);
@@ -51,8 +59,11 @@ for (const service of services) {
   }
   const checkedAt = now.toISOString();
   results.push({ ...service, status, latencyMs, lastCheckedAt: checkedAt, monitorMode });
+  probeHistory.services[service.id] ??= [];
+  probeHistory.services[service.id].push({ checkedAt, status, latencyMs, statusCode });
   monitorState.services[service.id] = { ...previousState, lastProbeAt: checkedAt, probeDue: true };
 }
 await writeFile('public/data/services.json', JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), services: results }, null, 2));
 monitorState.generatedAt = now.toISOString();
 await writeFile('public/data/monitor-state.json', JSON.stringify(monitorState, null, 2));
+await writeFile('public/data/probe-history.json', JSON.stringify(probeHistory, null, 2));

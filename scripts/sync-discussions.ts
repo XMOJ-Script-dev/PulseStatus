@@ -1,6 +1,10 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 
 interface Discussion { id: string; title: string; body: string; url: string; createdAt: string; category: { name: string } }
+function plainText(value: string): string {
+  return value.replaceAll(/<[^>]*>/g, '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
+}
+
 const token = process.env.GITHUB_TOKEN;
 const repositoryId = process.env.GITHUB_REPOSITORY_ID;
 if (!token || !repositoryId) {
@@ -14,6 +18,15 @@ const response = await fetch('https://api.github.com/graphql', { method: 'POST',
 if (!response.ok) throw new Error(`GitHub GraphQL ${response.status}`);
 const payload = await response.json() as { data?: { repository?: { discussions?: { nodes: Discussion[] } } }; errors?: unknown[] };
 if (payload.errors?.length || !payload.data?.repository?.discussions) throw new Error('GitHub Discussions response was unavailable');
-const announcements = payload.data.repository.discussions.nodes.filter((discussion) => ['Announcements', 'Scheduled Maintenance'].includes(discussion.category.name)).map((discussion) => ({ ...discussion, body: discussion.body.replace(/<[^>]*>/g, '').slice(0, 500) }));
+const announcements = payload.data.repository.discussions.nodes
+  .filter((discussion) => ['Announcements', 'Scheduled Maintenance'].includes(discussion.category.name))
+  .map((discussion) => ({
+    id: discussion.id,
+    title: plainText(discussion.title).slice(0, 200),
+    body: plainText(discussion.body).slice(0, 500),
+    url: discussion.url,
+    createdAt: discussion.createdAt,
+    category: { name: discussion.category.name },
+  }));
 await mkdir('public/data', { recursive: true });
 await writeFile('public/data/announcements.json', JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), available: true, announcements }, null, 2));

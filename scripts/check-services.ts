@@ -49,7 +49,9 @@ for (const service of services) {
   let latencyMs: number | undefined;
   let statusCode: number | undefined;
   try {
-    const response = await fetch(service.checkUrl, { signal: AbortSignal.timeout(timeoutMs) });
+    const checkUrl = new URL(service.checkUrl);
+    if (!['http:', 'https:'].includes(checkUrl.protocol)) throw new Error(`Unsupported probe URL protocol: ${checkUrl.protocol}`);
+    const response = await fetch(checkUrl, { signal: AbortSignal.timeout(timeoutMs) });
     latencyMs = Math.round(performance.now() - started);
     statusCode = response.status;
     status = response.ok ? 'operational' : 'degraded';

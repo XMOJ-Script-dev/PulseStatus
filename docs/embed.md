@@ -8,7 +8,8 @@ Use the static script from the deployed Pages origin:
 
 ```html
 <script defer src="https://XMOJ-Script-dev.github.io/PulseStatus/embed.js"
-  data-service="all" data-theme="auto" data-compact="false"
+  data-service="all" data-position="top-right" data-hide-operational="false"
+  data-theme="auto" data-compact="false"
   data-poll-interval="300000"></script>
 ```
 
@@ -19,11 +20,13 @@ The script derives its data origin from its own URL rather than the host page. I
 | Attribute | Values | Description |
 | --- | --- | --- |
 | `data-service` | `all` or a configured service ID | Limits the indicator to one service or shows the overall status. |
+| `data-position` | `top-right`, `top-left`, `bottom-right`, `bottom-left` | Fixes the status indicator to a viewport corner; defaults to `top-right`. |
+| `data-hide-operational` | `true`, `false` | Hides the fixed indicator while the selected service is operational; defaults to `false`. It is shown again for active incidents or unavailable data. |
 | `data-theme` | `auto`, `light`, `dark` | Chooses the embed color scheme. |
 | `data-compact` | `true`, `false` | Uses the compact layout when true. |
 | `data-poll-interval` | milliseconds | Requested refresh interval; values below 60 seconds are clamped. |
 
-Use one script per indicator and keep the script `defer` attribute so it does not block the host page. The embed reads public data only; it cannot access private GitHub Issues or service credentials.
+The indicator is a fixed, viewport-level notification. On screens up to 480px wide it uses 12px side margins and wraps text when necessary. Use one script per indicator and keep the script `defer` attribute so it does not block the host page. The embed reads public data only; it cannot access private GitHub Issues or service credentials.
 
 ## Troubleshooting
 

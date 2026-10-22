@@ -211,6 +211,12 @@
         "status": "operational",
         "latencyMs": 198,
         "statusCode": 200
+      },
+      {
+        "checkedAt": "2026-10-22T01:45:30.281Z",
+        "status": "operational",
+        "latencyMs": 299,
+        "statusCode": 200
       }
     ],
     "docs": [
@@ -422,6 +428,12 @@
         "checkedAt": "2026-10-21T23:33:58.001Z",
         "status": "operational",
         "latencyMs": 223,
+        "statusCode": 200
+      },
+      {
+        "checkedAt": "2026-10-22T01:45:30.281Z",
+        "status": "operational",
+        "latencyMs": 175,
         "statusCode": 200
       }
     ]

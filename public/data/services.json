@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-23T15:01:54.743Z",
+  "generatedAt": "2026-10-23T15:11:24.046Z",
   "services": [
     {
       "id": "web",
@@ -9,7 +9,6 @@
         "en": "XMOJ-Script main site",
         "zh": "XMOJ-Script 主站"
       },
-      "group": "Core services",
       "description": "The primary XMOJ-Script website.",
       "descriptionI18n": {
         "en": "The primary XMOJ-Script website.",
@@ -20,8 +19,8 @@
       "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
       "status": "operational",
-      "latencyMs": 458,
-      "lastCheckedAt": "2026-10-23T14:46:59.593Z"
+      "latencyMs": 422,
+      "lastCheckedAt": "2026-10-23T15:11:23.411Z"
     },
     {
       "id": "api",
@@ -30,7 +29,7 @@
         "en": "XMOJ-Script API",
         "zh": "XMOJ-Script API"
       },
-      "group": "Core services",
+      "group": "backend",
       "description": "The XMOJ-Script API service.",
       "descriptionI18n": {
         "en": "The XMOJ-Script API service.",
@@ -48,7 +47,7 @@
         "en": "XMOJ-Script assets",
         "zh": "XMOJ-Script 图床"
       },
-      "group": "Supporting services",
+      "group": "backend",
       "description": "Public image and asset hosting.",
       "descriptionI18n": {
         "en": "Public image and asset hosting.",
@@ -66,7 +65,6 @@
         "en": "XMOJ-Script documentation",
         "zh": "XMOJ-Script 文档"
       },
-      "group": "Supporting services",
       "description": "Public project documentation.",
       "descriptionI18n": {
         "en": "Public project documentation.",
@@ -77,8 +75,8 @@
       "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
       "status": "operational",
-      "latencyMs": 532,
-      "lastCheckedAt": "2026-10-23T14:46:59.593Z"
+      "latencyMs": 211,
+      "lastCheckedAt": "2026-10-23T15:11:23.411Z"
     }
   ]
 }

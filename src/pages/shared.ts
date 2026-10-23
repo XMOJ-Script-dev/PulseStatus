@@ -1,6 +1,6 @@
 import '../styles/main.css';
 import '../styles/custom.css';
-import type { Incident, Service, SiteConfig, Summary } from '../types/status';
+import type { Incident, Maintenance, Service, SiteConfig, Summary } from '../types/status';
 import { escapeHtml } from '../utils/status';
 import { language, statusLabel, t } from '../i18n';
 
@@ -47,6 +47,14 @@ export function incidentCard(incident: Incident, services: Service[] = []): stri
     <h3>${escapeHtml(incident.title)}</h3><p class="muted">${escapeHtml(incident.bodySummary)}</p>
     <small class="muted">${formatDate(incident.startedAt)} · ${names.map(escapeHtml).join(', ')}</small>
   </a>`;
+}
+
+export function maintenanceCard(item: Maintenance, services: Service[] = []): string {
+  const names = item.serviceIds.map((id) => {
+    const service = services.find((candidate) => candidate.id === id);
+    return service ? serviceName(service) : id;
+  });
+  return `<article class="card incident-card maintenance-card"><div class="incident-meta"><span class="pill">${escapeHtml(statusLabel(item.state))}</span></div><h3>${escapeHtml(item.title)}</h3><p class="muted">${formatDate(item.startsAt)} → ${formatDate(item.endsAt)}</p><small class="muted">${names.map(escapeHtml).join(', ')}</small><a href="${escapeHtml(item.url)}" rel="noreferrer">${t('viewOnGithub')}</a></article>`;
 }
 
 export function serviceCard(service: Service, incidents: Incident[] = []): string {

@@ -21,12 +21,16 @@ describe('Issue parsing', () => {
     expect(isActiveIssue(issue, { ...parsed, state: 'resolved' })).toBe(false);
   });
   it('only includes trusted comments in timeline', () => {
-    const comments = [{ id: 1, body: '<script>alert(1)</script>', html_url: 'https://x', created_at: '2026-02-01T01:00:00Z', user: { login: 'random', author_association: 'NONE' } }, { id: 2, body: 'Investigating', html_url: 'https://y', created_at: '2026-02-01T02:00:00Z', user: { login: 'maintainer', author_association: 'OWNER' } }];
+    const comments = [{ id: 1, body: '<script>alert(1)</script>', html_url: 'https://x', created_at: '2026-02-01T01:00:00Z', user: { login: 'random', author_association: 'NONE' } }, { id: 2, body: 'Investigating', html_url: 'https://y', created_at: '2026-02-01T02:00:00Z', user: { login: 'maintainer', author_association: 'OWNER' } }, { id: 3, body: 'Monitoring', html_url: 'https://z', created_at: '2026-02-01T03:00:00Z', user: { login: 'maintainer', author_association: 'OWNER' } }];
     expect(trustedComment(comments[0], config)).toBe(false);
-    const incident = issueToIncident(issue, comments, config)!;
-    expect(incident.timeline).toHaveLength(2);
+    const incident = issueToIncident(issue, comments, config, [{ event: 'labeled', created_at: '2026-02-01T02:30:00Z', label: { name: 'state/monitoring' } }])!;
+    expect(incident.timeline).toHaveLength(4);
     expect(incident.timeline[1].text).not.toContain('<script>');
     expect(incident.timeline[1].state).toBe('investigating');
+    expect(incident.timeline[0].state).toBe('investigating');
+    expect(incident.timeline[2].state).toBe('monitoring');
+    expect(incident.timeline[2].type).toBe('state_change');
+    expect(incident.timeline[3].state).toBe('monitoring');
   });
   it('publishes only the Issue Form impact summary', () => {
     const incident = issueToIncident({

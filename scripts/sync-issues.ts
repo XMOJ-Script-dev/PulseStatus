@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import type { GithubComment, GithubIssue, IssueParseConfig } from '../src/data/issues';
+import type { GithubComment, GithubIssue, GithubIssueEvent, IssueParseConfig } from '../src/data/issues';
 import { issueToIncident } from '../src/data/issues';
 import { issueToMaintenance } from '../src/data/maintenance';
 import type { Incident } from '../src/types/status';
@@ -40,7 +40,8 @@ for (const issue of issues) {
     continue;
   }
   const comments = await githubPages<GithubComment>(`/repos/${owner}/${repository}/issues/${issue.number}/comments`);
-  const incident = issueToIncident(issue, comments, config);
+  const events = await githubPages<GithubIssueEvent>(`/repos/${owner}/${repository}/issues/${issue.number}/events`);
+  const incident = issueToIncident(issue, comments, config, events);
   if (incident) incidents.push(incident);
   else if (issue.labels.some((label) => label.name === config.publishLabel)) console.warn(JSON.stringify({ issue: issue.number, warning: 'invalid incident labels; skipped' }));
 }

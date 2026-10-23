@@ -52,6 +52,9 @@ p { line-height: 1.55; }
 .status-banner.danger .status-dot { background: var(--danger); }
 .status-banner.unknown .status-dot { background: var(--muted); }
 .section-heading { display: flex; justify-content: space-between; align-items: end; gap: 16px; }
+.section-actions { display: flex; align-items: center; gap: 12px; }
+.section-button { color: var(--brand); font-size: .84rem; font-weight: 700; text-decoration: none; }
+.section-button:hover, .section-button:focus-visible { text-decoration: underline; }
 .section-heading .eyebrow { margin-bottom: 5px; }
 .section-count { color: var(--muted); font-size: .86rem; font-weight: 700; }
 .section-note { color: var(--muted); font-size: .82rem; }

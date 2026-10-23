@@ -87,6 +87,7 @@ export function t(key: TranslationKey): string {
 
 export function statusLabel(status: string): string {
   if (status === 'unknown') return t('limitedMonitoring');
+  if (status in messages.state) return messages.state[status as keyof typeof messages.state];
   if (status === 'monitoring') return t('limitedMonitoring');
   if (status === 'manually_reported') return t('manualMonitoring');
   if (status === 'operational') return t('operational');
@@ -100,6 +101,5 @@ export function statusLabel(status: string): string {
   if (status === 'completed') return t('completed');
   if (status === 'cancelled') return t('cancelled');
   if (status in messages.severity) return messages.severity[status as keyof typeof messages.severity];
-  if (status in messages.state) return messages.state[status as keyof typeof messages.state];
   return status.replaceAll('_', ' ');
 }

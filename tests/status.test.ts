@@ -30,6 +30,7 @@ describe('Issue parsing', () => {
     expect(incident.timeline[0].state).toBe('investigating');
     expect(incident.timeline[2].state).toBe('monitoring');
     expect(incident.timeline[2].type).toBe('state_change');
+    expect(incident.timeline[2].text).toBe('');
     expect(incident.timeline[3].state).toBe('monitoring');
   });
   it('publishes only the Issue Form impact summary', () => {

@@ -87,7 +87,7 @@ export function buildTimeline(issue: GithubIssue, comments: GithubComment[], par
     .forEach((event) => {
       const state = event.label?.name.slice(6);
       if (state && ['investigating', 'identified', 'monitoring', 'resolved'].includes(state)) {
-        entries.push({ id: `event-${event.created_at}-${state}`, at: event.created_at, type: 'state_change', state: state as IncidentState, text: 'Incident status changed.' });
+        entries.push({ id: `event-${event.created_at}-${state}`, at: event.created_at, type: 'state_change', state: state as IncidentState, text: '' });
       }
     });
   comments.filter((comment) => trustedComment(comment, config)).forEach((comment) => {

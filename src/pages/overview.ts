@@ -27,7 +27,7 @@ async function render(): Promise<void> {
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
     document.querySelector('#incidents')!.innerHTML = active.length ? active.map((incident) => incidentCard(incident, services.services)).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${outageWithoutIncident ? t('noPublishedIncidentForOutage') : t('noIncidentsNote')}</span></p>`;
-    const visibleMaintenance = maintenance.maintenance.filter((item) => item.state === 'scheduled' || item.state === 'in_progress').sort((a, b) => a.startsAt.localeCompare(b.startsAt));
+    const visibleMaintenance = [...maintenance.maintenance].sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     document.querySelector('#maintenance-count')!.textContent = `${visibleMaintenance.length} ${t('maintenanceItems')}`;
     document.querySelector('#maintenance')!.innerHTML = visibleMaintenance.length ? visibleMaintenance.map((item) => maintenanceCard(item, services.services)).join('') : `<p class="card empty">${t('noMaintenance')}</p>`;
     document.querySelector('#services')!.innerHTML = services.services.length ? services.services.map((service) => serviceCard(service, active)).join('') : '<p class="card empty">No service data available</p>';

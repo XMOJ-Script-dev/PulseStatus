@@ -38,7 +38,9 @@ for (const service of services) {
   const intervalMinutes = service.checkIntervalMinutes ?? defaultIntervalMinutes;
   const lastProbeAt = previousState.lastProbeAt ?? previous?.lastCheckedAt;
   const lastProbeValue = lastProbeAt ? new Date(lastProbeAt).valueOf() : Number.NaN;
-  const due = !lastProbeAt || !Number.isFinite(lastProbeValue) || now.valueOf() - lastProbeValue >= intervalMinutes * 60_000;
+  const lastCheckedValue = previous?.lastCheckedAt ? new Date(previous.lastCheckedAt).valueOf() : Number.NaN;
+  const snapshotIsStale = Number.isFinite(lastProbeValue) && (!Number.isFinite(lastCheckedValue) || lastCheckedValue < lastProbeValue);
+  const due = snapshotIsStale || !lastProbeAt || !Number.isFinite(lastProbeValue) || now.valueOf() - lastProbeValue >= intervalMinutes * 60_000;
   if (!due && previous) {
     results.push({ ...previous, ...service, status: previous.status, lastCheckedAt: previous.lastCheckedAt, latencyMs: previous.latencyMs, monitorMode });
     monitorState.services[service.id] = { ...previousState, probeDue: false };

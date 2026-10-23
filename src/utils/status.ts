@@ -50,7 +50,13 @@ export function buildSummary(incidents: Incident[], services: Service[], generat
   };
 }
 
-export function buildDailyUptime(incidents: Incident[], serviceIds: string[], generatedAt: string, dayCount = 90): DailyUptime[] {
+export function buildDailyUptime(
+  incidents: Incident[],
+  serviceIds: string[],
+  generatedAt: string,
+  dayCount = 90,
+  currentServices: Array<Pick<Service, 'id' | 'status' | 'lastCheckedAt'>> = [],
+): DailyUptime[] {
   const snapshot = new Date(generatedAt);
   if (Number.isNaN(snapshot.valueOf())) throw new Error(`Invalid uptime snapshot time: ${generatedAt}`);
   if (!Number.isInteger(dayCount) || dayCount < 1) throw new Error(`Invalid uptime day count: ${dayCount}`);
@@ -64,14 +70,20 @@ export function buildDailyUptime(incidents: Incident[], serviceIds: string[], ge
     const date = new Date(start).toISOString().slice(0, 10);
     const services = Object.fromEntries(serviceIds.map((serviceId) => [
       serviceId,
-      uptimeForDay(incidents, serviceId, start, end),
+      uptimeForDay(incidents, serviceId, start, end, currentServices),
     ]));
     days.push({ date, services });
   }
   return days;
 }
 
-function uptimeForDay(incidents: Incident[], serviceId: string, dayStart: number, dayEnd: number): number {
+function uptimeForDay(
+  incidents: Incident[],
+  serviceId: string,
+  dayStart: number,
+  dayEnd: number,
+  currentServices: Array<Pick<Service, 'id' | 'status' | 'lastCheckedAt'>>,
+): number {
   const intervals = incidents
     .filter((incident) => incident.serviceIds.includes(serviceId))
     .map((incident) => {
@@ -81,6 +93,12 @@ function uptimeForDay(incidents: Incident[], serviceId: string, dayStart: number
     })
     .filter(([start, end]) => Number.isFinite(start) && Number.isFinite(end) && end > start)
     .sort(([leftStart], [rightStart]) => leftStart - rightStart);
+  const currentService = currentServices.find((service) => service.id === serviceId);
+  if (currentService?.status === 'down') {
+    const downSince = new Date(currentService.lastCheckedAt ?? '').valueOf();
+    if (Number.isFinite(downSince) && downSince < dayEnd) intervals.push([Math.max(downSince, dayStart), dayEnd]);
+  }
+  intervals.sort(([leftStart], [rightStart]) => leftStart - rightStart);
 
   let downtime = 0;
   let intervalEnd = -Infinity;
@@ -96,4 +114,103 @@ export function escapeHtml(value: string): string {
   return value.replace(/[&<>"']/g, (character) => ({
     '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
   }[character] ?? character));
+}
+
+function safeMarkdownUrl(value: string): string | null {
+  const url = value.trim();
+  return /^(?:https?:|mailto:)/i.test(url) ? url : null;
+}
+
+export function renderMarkdown(markdown: string): string {
+  const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
+  const blocks: string[] = [];
+  let paragraph: string[] = [];
+  let list: 'ul' | 'ol' | null = null;
+  let code: string[] | null = null;
+
+  const flushParagraph = () => {
+    if (paragraph.length) {
+      blocks.push(`<p>${renderMarkdownInline(paragraph.join(' '))}</p>`);
+      paragraph = [];
+    }
+  };
+  const flushList = () => {
+    if (list) blocks.push(`</${list}>`);
+    list = null;
+  };
+
+  for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      if (code) {
+        blocks.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+        code = null;
+      } else {
+        flushParagraph();
+        flushList();
+        code = [];
+      }
+      continue;
+    }
+    if (code) {
+      code.push(line);
+      continue;
+    }
+    const heading = line.match(/^(#{1,6})\s+(.+)$/);
+    const quote = line.match(/^\s*>\s?(.*)$/);
+    const unordered = line.match(/^\s*[-*]\s+(.+)$/);
+    const ordered = line.match(/^\s*\d+\.\s+(.+)$/);
+    if (!line.trim()) {
+      flushParagraph();
+      flushList();
+    } else if (heading) {
+      flushParagraph();
+      flushList();
+      const level = heading[1].length;
+      blocks.push(`<h${level}>${renderMarkdownInline(heading[2])}</h${level}>`);
+    } else if (quote) {
+      flushParagraph();
+      flushList();
+      blocks.push(`<blockquote>${renderMarkdownInline(quote[1])}</blockquote>`);
+    } else if (unordered || ordered) {
+      flushParagraph();
+      const nextList = unordered ? 'ul' : 'ol';
+      if (list !== nextList) {
+        flushList();
+        list = nextList;
+        blocks.push(`<${list}>`);
+      }
+      blocks.push(`<li>${renderMarkdownInline((unordered ?? ordered)![1])}</li>`);
+    } else {
+      flushList();
+      paragraph.push(line.trim());
+    }
+  }
+  if (code) blocks.push(`<pre><code>${escapeHtml(code.join('\n'))}</code></pre>`);
+  flushParagraph();
+  flushList();
+  return blocks.join('');
+}
+
+function renderMarkdownInline(value: string): string {
+  const placeholders: string[] = [];
+  const placeholder = (html: string) => {
+    const key = `\u0000${placeholders.length}\u0000`;
+    placeholders.push(html);
+    return key;
+  };
+  let rendered = escapeHtml(value)
+    .replace(/!\[([^\]]*)\]\(([^)\s]+)(?:\s+"([^"]*)")?\)/g, (_, alt: string, rawUrl: string, title?: string) => {
+      const url = safeMarkdownUrl(rawUrl);
+      return url ? placeholder(`<img src="${escapeHtml(url)}" alt="${escapeHtml(alt)}"${title ? ` title="${escapeHtml(title)}"` : ''} loading="lazy">`) : escapeHtml(_);
+    })
+    .replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, text: string, rawUrl: string) => {
+      const url = safeMarkdownUrl(rawUrl);
+      return url ? placeholder(`<a href="${escapeHtml(url)}" rel="noreferrer">${text}</a>`) : text;
+    })
+    .replace(/`([^`]+)`/g, (_, text: string) => placeholder(`<code>${text}</code>`))
+    .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+    .replace(/__([^_]+)__/g, '<strong>$1</strong>')
+    .replace(/(?<!\*)\*([^*]+)\*(?!\*)/g, '<em>$1</em>')
+    .replace(/(?<!_)_([^_]+)_(?!_)/g, '<em>$1</em>');
+  return rendered.replace(/\u0000(\d+)\u0000/g, (_, index: string) => placeholders[Number(index)] ?? '');
 }

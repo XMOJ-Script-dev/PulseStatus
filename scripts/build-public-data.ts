@@ -40,7 +40,7 @@ await writeFile('public/data/history-index.json', JSON.stringify({ schemaVersion
 const uptime: UptimeHistory = {
   schemaVersion: 1,
   generatedAt,
-  days: buildDailyUptime(incidents, servicesData.services.map((service) => service.id), generatedAt),
+  days: buildDailyUptime(incidents, servicesData.services.map((service) => service.id), generatedAt, 90, servicesData.services),
 };
 await writeFile('public/data/uptime.json', JSON.stringify(uptime, null, 2));
 console.log(`Built summary, ${months.length} history month files, and ${uptime.days.length} uptime days.`);

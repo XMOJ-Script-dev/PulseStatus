@@ -58,7 +58,7 @@ export function buildTimeline(issue: GithubIssue, comments: GithubComment[], par
     id: `issue-${issue.number}`, at: issue.created_at, type: 'issue_event', state: parsed.state, text: 'Incident published.',
   }];
   comments.filter((comment) => trustedComment(comment, config)).forEach((comment) => {
-    entries.push({ id: `comment-${comment.id}`, at: comment.updated_at ?? comment.created_at, type: 'comment', text: safeSummary(comment.body), url: comment.html_url, author: comment.user?.login });
+    entries.push({ id: `comment-${comment.id}`, at: comment.updated_at ?? comment.created_at, type: 'comment', state: parsed.state, text: safeSummary(comment.body), url: comment.html_url, author: comment.user?.login });
   });
   return entries.sort((a, b) => a.at.localeCompare(b.at));
 }
@@ -68,7 +68,7 @@ export function issueToIncident(issue: GithubIssue, comments: GithubComment[], c
   if (!parsed.isIncident || !parsed.valid || !parsed.severity) return null;
   return {
     id: `issue-${issue.number}`, number: issue.number, title: issue.title, url: issue.html_url,
-    bodySummary: safeSummary(issue.body), startedAt: issue.created_at, updatedAt: issue.updated_at,
+    bodySummary: safeSummary(issue.body), bodyMarkdown: issue.body ?? '', startedAt: issue.created_at, updatedAt: issue.updated_at,
     closedAt: issue.closed_at ?? undefined, state: parsed.state, severity: parsed.severity,
     serviceIds: parsed.serviceIds, isActive: isActiveIssue(issue, parsed),
     timeline: buildTimeline(issue, comments, parsed, config),

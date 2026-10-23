@@ -81,6 +81,19 @@ p { line-height: 1.55; }
 .timeline { display: grid; gap: 0; margin-top: 20px; }
 .timeline-item { border-left: 2px solid var(--border); padding: 0 0 22px 20px; position: relative; }
 .timeline-item::before { content: ""; position: absolute; left: -7px; top: 2px; width: 10px; height: 10px; border-radius: 50%; background: var(--brand); }
+.incident-detail { display: grid; gap: 16px; }
+.incident-services { margin: 0; color: var(--muted); }
+.markdown-content { color: var(--ink-soft); }
+.markdown-content > :first-child { margin-top: 0; }
+.markdown-content > :last-child { margin-bottom: 0; }
+.markdown-content p, .markdown-content ul, .markdown-content ol, .markdown-content blockquote, .markdown-content pre { margin: 12px 0; }
+.markdown-content ul, .markdown-content ol { padding-left: 24px; }
+.markdown-content blockquote { margin-left: 0; padding-left: 16px; border-left: 3px solid var(--border); color: var(--muted); }
+.markdown-content pre { overflow-x: auto; padding: 14px; border-radius: 10px; background: #17243d; color: #e5e7eb; }
+.markdown-content code { padding: 2px 5px; border-radius: 4px; background: rgb(99 102 241 / 10%); font-size: .9em; }
+.markdown-content pre code { padding: 0; background: transparent; }
+.markdown-content img { max-width: 100%; height: auto; border-radius: 10px; }
+.outage-notice { margin: 0; color: #92400e; background: #fffbeb; border-color: #fcd34d; }
 .month-group { display: grid; gap: 12px; }
 .uptime-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(310px, 100%), 1fr)); gap: 14px; }
 .uptime-card { display: grid; gap: 20px; }

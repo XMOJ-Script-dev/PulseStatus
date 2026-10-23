@@ -6,6 +6,7 @@ const app = document.querySelector<HTMLDivElement>('#app')!;
 app.innerHTML = layout(`${t('uptimeHistory')} · PulseStatus`, `<section class="hero"><div><p class="eyebrow">${t('serviceStatus')}</p><h1>${t('uptimeHistory')}</h1><p class="muted">${t('uptimeIntro')}</p></div></section><section id="uptime-section" aria-labelledby="uptime-heading"><div class="section-heading"><div><p class="eyebrow">${t('uptimeLegend')}</p><h2 id="uptime-heading">${t('uptimeHistory')}</h2></div><span id="uptime-as-of" class="section-note"></span></div><div id="uptime-history" class="uptime-grid" aria-live="polite"><p class="card muted">${t('loadingHistory')}</p></div></section><section aria-labelledby="incidents-heading"><div class="section-heading"><div><p class="eyebrow">${t('resolvedEvents')}</p><h2 id="incidents-heading">${t('incidentHistory')}</h2></div></div><div id="history-status" aria-live="polite" class="muted">${t('loadingHistory')}</div><div id="months" class="incident-list"></div><button id="load-more" class="load-more" type="button" hidden>${t('loadMore')}</button></section>`);
 
 let index: HistoryIndex;
+let serviceCatalog: Service[] = [];
 let cursor = 0;
 const loaded = new Set<string>();
 
@@ -29,7 +30,7 @@ async function loadNext(): Promise<void> {
     results.forEach(({ month, count, incidents }) => {
       const section = document.createElement('section');
       section.className = 'month-group';
-      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${count} ${t('incidentsInMonth')}</span></div>${incidents.map(incidentCard).join('') || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
+      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${count} ${t('incidentsInMonth')}</span></div>${incidents.map((incident) => incidentCard(incident, serviceCatalog)).join('') || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
       document.querySelector('#months')!.append(section);
     });
     cursor += months.length;
@@ -46,7 +47,10 @@ async function loadNext(): Promise<void> {
 async function init(): Promise<void> {
   void loadUptime();
   try {
-    index = await fetchJson<HistoryIndex>(dataUrl('history-index.json'));
+    [index, { services: serviceCatalog }] = await Promise.all([
+      fetchJson<HistoryIndex>(dataUrl('history-index.json')),
+      fetchJson<{ services: Service[] }>(dataUrl('services.json')),
+    ]);
     if (index.months.length === 0) {
       document.querySelector('#history-status')!.textContent = '';
       document.querySelector('#months')!.innerHTML = `<p class="card empty">${t('noHistory')}</p>`;

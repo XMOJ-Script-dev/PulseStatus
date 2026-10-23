@@ -37,11 +37,15 @@ export function formatDate(value?: string): string {
   return Number.isNaN(date.valueOf()) ? t('limitedMonitoring') : date.toLocaleString(language === 'zh' ? 'zh-CN' : 'en-US', { dateStyle: 'medium', timeStyle: 'short' });
 }
 
-export function incidentCard(incident: Incident): string {
+export function incidentCard(incident: Incident, services: Service[] = []): string {
+  const names = incident.serviceIds.map((id) => {
+    const service = services.find((item) => item.id === id);
+    return service ? serviceName(service) : id;
+  });
   return `<a class="card incident-card" href="${base}incident.html?number=${incident.number}">
     <div class="incident-meta"><span class="pill ${incident.severity}">${escapeHtml(statusLabel(incident.severity))}</span><span class="pill">${escapeHtml(statusLabel(incident.state))}</span></div>
     <h3>${escapeHtml(incident.title)}</h3><p class="muted">${escapeHtml(incident.bodySummary)}</p>
-    <small class="muted">${formatDate(incident.startedAt)} · ${incident.serviceIds.map(escapeHtml).join(', ')}</small>
+    <small class="muted">${formatDate(incident.startedAt)} · ${names.map(escapeHtml).join(', ')}</small>
   </a>`;
 }
 

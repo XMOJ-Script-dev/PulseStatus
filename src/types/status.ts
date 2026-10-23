@@ -19,6 +19,7 @@ export interface Incident {
   title: string;
   url: string;
   bodySummary: string;
+  bodyMarkdown?: string;
   startedAt: string;
   updatedAt: string;
   closedAt?: string;

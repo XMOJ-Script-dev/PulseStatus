@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
 import { maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
 import { applyCheck } from '../src/data/monitor';
-import { buildDailyUptime, buildSummary, groupHistoryByMonth } from '../src/utils/status';
+import { buildDailyUptime, buildSummary, groupHistoryByMonth, renderMarkdown } from '../src/utils/status';
 import type { Incident } from '../src/types/status';
 
 const config = { publishLabel: 'statuspage/incident', serviceIds: ['web', 'api'], trustedMaintainers: ['maintainer'], trustedAssociations: ['OWNER'] };
@@ -26,6 +26,7 @@ describe('Issue parsing', () => {
     const incident = issueToIncident(issue, comments, config)!;
     expect(incident.timeline).toHaveLength(2);
     expect(incident.timeline[1].text).not.toContain('<script>');
+    expect(incident.timeline[1].state).toBe('investigating');
   });
 });
 
@@ -52,6 +53,20 @@ describe('history and maintenance', () => {
     ];
     const [day] = buildDailyUptime(incidents, ['api', 'web'], '2026-10-16T00:00:00Z', 1);
     expect(day).toEqual({ date: '2026-10-15', services: { api: 83.333, web: 100 } });
+  });
+  it('includes the current detected outage in today’s uptime', () => {
+    const [day] = buildDailyUptime([], ['web'], '2026-10-16T00:00:00Z', 1, [{
+      id: 'web', status: 'down', lastCheckedAt: '2026-10-15T12:00:00Z',
+    }]);
+    expect(day.services.web).toBe(50);
+  });
+  it('renders safe Markdown without allowing raw HTML or unsafe links', () => {
+    const rendered = renderMarkdown('## Impact\n\n**Down** [details](https://example.com)\n\n<script>alert(1)</script> [bad](javascript:alert(1))');
+    expect(rendered).toContain('<h2>Impact</h2>');
+    expect(rendered).toContain('<strong>Down</strong>');
+    expect(rendered).toContain('href="https://example.com"');
+    expect(rendered).not.toContain('<script>');
+    expect(rendered).not.toContain('javascript:');
   });
 });
 

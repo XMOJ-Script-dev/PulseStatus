@@ -102,6 +102,11 @@ jobs:
           fi
           git add public/data/monitor-state.json public/data/probe-history.json
           if ! git diff --cached --quiet; then
+            stashed=false
+            if ! git diff --quiet; then
+              git stash push --include-untracked --keep-index -m "pulsestatus-publish-data"
+              stashed=true
+            fi
             git commit -m "chore: persist monitor state [skip ci]"
             pushed=false
             for attempt in 1 2 3; do
@@ -116,6 +121,9 @@ jobs:
             done
             if [ "$pushed" != true ]; then
               echo "::warning::Could not persist monitor state because main changed concurrently; continuing with the current build."
+            fi
+            if [ "$stashed" = true ]; then
+              git stash pop
             fi
           fi
       - run: npm run build-data && npm run generate-badges

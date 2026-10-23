@@ -104,6 +104,9 @@ p { line-height: 1.55; }
 .uptime-card-heading small { color: var(--muted); font-size: .72rem; }
 .uptime-days { display: grid; grid-template-columns: repeat(15, minmax(0, 1fr)); gap: 4px; }
 .uptime-day { aspect-ratio: 1; min-height: 12px; border: 1px solid rgb(22 101 52 / 10%); border-radius: 3px; background: #15803d; }
+.has-tooltip { position: relative; outline: none; }
+.has-tooltip::after { content: attr(data-tooltip); position: absolute; z-index: 5; left: 50%; bottom: calc(100% + 9px); width: max-content; max-width: min(280px, 80vw); padding: 8px 10px; border: 1px solid rgb(148 163 184 / 28%); border-radius: 8px; background: rgb(23 36 61 / 94%); color: #fff; box-shadow: 0 8px 20px rgb(23 36 61 / 20%); font-size: .75rem; font-weight: 600; line-height: 1.35; opacity: 0; pointer-events: none; transform: translate(-50%, 4px); transition: opacity .16s ease, transform .16s ease; }
+.has-tooltip:hover::after, .has-tooltip:focus-visible::after { opacity: 1; transform: translate(-50%, 0); }
 .uptime-day[data-level="good"] { background: #22c55e; }
 .uptime-day[data-level="fair"] { background: #86efac; }
 .uptime-day[data-level="low"] { background: #dcfce7; }
@@ -127,6 +130,7 @@ footer { margin-top: 32px; color: var(--muted); font-size: .88rem; }
 .detail-list dd { margin: 0; text-align: right; }
 .uptime-detail-grid { grid-template-columns: repeat(30, minmax(0, 1fr)); }
 .probe-history-grid { display: grid; grid-template-columns: repeat(30, minmax(0, 1fr)); gap: 4px; }
+.probe-history-grid > .empty { grid-column: 1 / -1; width: 100%; }
 .probe-result { aspect-ratio: 1; min-height: 12px; border-radius: 3px; background: var(--muted); }
 .probe-result[data-status="operational"] { background: var(--success); }
 .probe-result[data-status="degraded"] { background: var(--warning); }

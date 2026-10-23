@@ -26,7 +26,7 @@ async function render(): Promise<void> {
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
     document.querySelector('#incidents')!.innerHTML = active.length ? active.map((incident) => incidentCard(incident, services.services)).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${outageWithoutIncident ? t('noPublishedIncidentForOutage') : t('noIncidentsNote')}</span></p>`;
-    document.querySelector('#services')!.innerHTML = services.services.length ? services.services.map(serviceCard).join('') : '<p class="card empty">No service data available</p>';
+    document.querySelector('#services')!.innerHTML = services.services.length ? services.services.map((service) => serviceCard(service, active)).join('') : '<p class="card empty">No service data available</p>';
   } catch (error) {
     document.querySelector('#status')!.outerHTML = `<div class="status-banner unknown error" role="alert"><span class="status-dot"></span><strong>${t('statusUnavailable')}</strong></div>`;
     document.querySelector('#incidents')!.innerHTML = `<p class="card error">${t('dataUnavailable')}</p>`;

@@ -49,10 +49,16 @@ export function incidentCard(incident: Incident, services: Service[] = []): stri
   </a>`;
 }
 
-export function serviceCard(service: Service): string {
+export function serviceCard(service: Service, incidents: Incident[] = []): string {
   const name = serviceName(service);
   const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
-  return `<a class="service-card-link" href="${base}service.html?id=${encodeURIComponent(service.id)}"><article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(name)}</h3><span class="pill ${service.status.replace('_', '-')}">${escapeHtml(statusLabel(service.status))}</span></div><p class="muted">${escapeHtml(description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article></a>`;
+  const activeIncidents = incidents.filter((incident) => incident.isActive && incident.serviceIds.includes(service.id));
+  const status = activeIncidents.some((incident) => incident.severity !== 'minor')
+    ? 'down'
+    : activeIncidents.length
+      ? 'degraded'
+      : service.status;
+  return `<a class="service-card-link" href="${base}service.html?id=${encodeURIComponent(service.id)}"><article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(name)}</h3><span class="pill ${status.replace('_', '-')}">${escapeHtml(statusLabel(status))}</span></div><p class="muted">${escapeHtml(description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article></a>`;
 }
 
 export function serviceName(service: Service): string {

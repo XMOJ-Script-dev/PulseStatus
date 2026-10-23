@@ -28,6 +28,14 @@ describe('Issue parsing', () => {
     expect(incident.timeline[1].text).not.toContain('<script>');
     expect(incident.timeline[1].state).toBe('investigating');
   });
+  it('publishes only the Issue Form impact summary', () => {
+    const incident = issueToIncident({
+      ...issue,
+      body: '### Affected service\n\napi\n\n### Impact summary\n\n**API errors** are affecting users.\n\n### Initial phase\n\ninvestigating',
+    }, [], config)!;
+    expect(incident.bodyMarkdown).toBe('**API errors** are affecting users.');
+    expect(incident.bodySummary).toBe('API errors are affecting users.');
+  });
 });
 
 describe('history and maintenance', () => {

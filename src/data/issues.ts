@@ -48,6 +48,17 @@ function safeSummary(body: string | null): string {
   return (body ?? '').replace(/[`*_>#]/g, '').replace(/\s+/g, ' ').trim().slice(0, 280);
 }
 
+function impactSummary(body: string | null): string {
+  const lines = (body ?? '').replace(/\r\n?/g, '\n').split('\n');
+  const heading = /^###\s+Impact summary\s*$/i;
+  const nextHeading = /^###\s+/;
+  const start = lines.findIndex((line) => heading.test(line.trim()));
+  if (start < 0) return (body ?? '').trim();
+  const end = lines.slice(start + 1).findIndex((line) => nextHeading.test(line.trim()));
+  const content = lines.slice(start + 1, end < 0 ? undefined : start + 1 + end);
+  return content.join('\n').replace(/^\s*---\s*$/gm, '').trim();
+}
+
 export function trustedComment(comment: GithubComment, config: Pick<IssueParseConfig, 'trustedMaintainers' | 'trustedAssociations'>): boolean {
   const login = comment.user?.login;
   return Boolean(login && (config.trustedMaintainers.includes(login) || config.trustedAssociations.includes(comment.user?.author_association ?? '')));
@@ -66,9 +77,10 @@ export function buildTimeline(issue: GithubIssue, comments: GithubComment[], par
 export function issueToIncident(issue: GithubIssue, comments: GithubComment[], config: IssueParseConfig): Incident | null {
   const parsed = parseIssueLabels(issue.labels, config);
   if (!parsed.isIncident || !parsed.valid || !parsed.severity) return null;
+  const impact = impactSummary(issue.body);
   return {
     id: `issue-${issue.number}`, number: issue.number, title: issue.title, url: issue.html_url,
-    bodySummary: safeSummary(issue.body), bodyMarkdown: issue.body ?? '', startedAt: issue.created_at, updatedAt: issue.updated_at,
+    bodySummary: safeSummary(impact), bodyMarkdown: impact, startedAt: issue.created_at, updatedAt: issue.updated_at,
     closedAt: issue.closed_at ?? undefined, state: parsed.state, severity: parsed.severity,
     serviceIds: parsed.serviceIds, isActive: isActiveIssue(issue, parsed),
     timeline: buildTimeline(issue, comments, parsed, config),

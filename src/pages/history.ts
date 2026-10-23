@@ -1,5 +1,6 @@
 import type { HistoryIndex, Incident, Service, UptimeHistory } from '../types/status';
 import { dataUrl, formatDate, incidentCard, layout, serviceName } from './shared';
+import { escapeHtml } from '../utils/status';
 import { t } from '../i18n';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -87,7 +88,7 @@ async function loadUptime(): Promise<void> {
         const value = day.services[service.id];
         if (typeof value !== 'number') return '';
         const label = `${t('uptimeDay')} ${day.date}: ${value.toFixed(3)}%`;
-        return `<span class="uptime-day" data-level="${uptimeLevel(value)}" title="${label}" aria-label="${label}"></span>`;
+        return `<span class="uptime-day has-tooltip" data-level="${uptimeLevel(value)}" data-tooltip="${escapeHtml(label)}" tabindex="0" aria-label="${escapeHtml(label)}"></span>`;
       }).join('');
       return `<article class="card uptime-card"><div class="uptime-card-heading"><h3>${serviceName(service)}</h3><span><strong>${average.toFixed(3)}%</strong><small>${t('uptimeAverage')}</small></span></div><div class="uptime-days" role="img" aria-label="${t('uptimeLegend')} — ${serviceName(service)}">${cells}</div></article>`;
     });

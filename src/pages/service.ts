@@ -44,7 +44,7 @@ async function init(): Promise<void> {
       const value = day.services[service.id];
       if (typeof value !== 'number') return '';
       const label = `${t('uptimeDay')} ${day.date}: ${value.toFixed(3)}%`;
-      return `<span class="uptime-day" data-level="${uptimeLevel(value)}" title="${label}" aria-label="${label}"></span>`;
+      return `<span class="uptime-day has-tooltip" data-level="${uptimeLevel(value)}" data-tooltip="${escapeHtml(label)}" tabindex="0" aria-label="${escapeHtml(label)}"></span>`;
     }).join('');
     const incidents = incidentsData.incidents.filter((incident) => incident.serviceIds.includes(service.id)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     const activeIncidents = incidents.filter((incident) => incident.isActive);
@@ -56,7 +56,10 @@ async function init(): Promise<void> {
     const maintenance = maintenanceData.maintenance.filter((item) => item.serviceIds.includes(service.id)).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     const maintenanceCards = maintenance.map((item) => `<article class="card incident-card"><div class="incident-meta"><span class="pill">${escapeHtml(statusLabel(item.state))}</span></div><h3>${escapeHtml(item.title)}</h3><p class="muted">${formatDate(item.startsAt)} → ${formatDate(item.endsAt)}</p><a href="${escapeHtml(item.url)}" rel="noreferrer">${t('viewOnGithub')}</a></article>`).join('');
     const probes = (probeHistory.services[service.id] ?? []).slice(-90);
-    const probeCells = probes.map((probe) => `<span class="probe-result" data-status="${probe.status}" title="${formatDate(probe.checkedAt)} · ${statusLabel(probe.status)}${probe.latencyMs === undefined ? '' : ` · ${probe.latencyMs} ms`}" aria-label="${formatDate(probe.checkedAt)}: ${statusLabel(probe.status)}"></span>`).join('');
+    const probeCells = probes.map((probe) => {
+      const label = `${formatDate(probe.checkedAt)} · ${statusLabel(probe.status)}${probe.latencyMs === undefined ? '' : ` · ${probe.latencyMs} ms`}`;
+      return `<span class="probe-result has-tooltip" data-status="${probe.status}" data-tooltip="${escapeHtml(label)}" tabindex="0" aria-label="${escapeHtml(formatDate(probe.checkedAt))}: ${escapeHtml(statusLabel(probe.status))}"></span>`;
+    }).join('');
     const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
     const outageNotice = incidentStatus === 'down' && !activeIncidents.length
       ? `<p class="card outage-notice">${t('detectedOutageNoIncident')}</p>`

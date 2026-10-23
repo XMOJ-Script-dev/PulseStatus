@@ -34,7 +34,8 @@ export interface Service {
   id: string;
   name: string;
   nameI18n?: Record<string, string>;
-  group: string;
+  group?: string;
+  parentGroup?: string;
   description: string;
   descriptionI18n?: Record<string, string>;
   publicUrl?: string;
@@ -45,6 +46,13 @@ export interface Service {
   uptime90d?: number;
   monitorMode: 'scheduled' | 'manual' | 'hybrid';
   checkIntervalMinutes?: number;
+}
+
+export interface ServiceGroupConfig {
+  parentGroup?: string;
+  name?: string;
+  nameI18n?: Record<string, string>;
+  defaultExpanded?: boolean;
 }
 
 export interface Summary {
@@ -93,6 +101,7 @@ export interface SiteConfig {
   footerText?: string;
   footerLinks?: Array<{ label: string; url: string }>;
   theme: 'modern' | 'compact' | 'vivid' | 'mono';
+  serviceGroups?: Record<string, ServiceGroupConfig>;
 }
 
 export interface MonitorState {

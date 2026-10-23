@@ -68,6 +68,10 @@ p { line-height: 1.55; }
 .service-card > small { margin-top: auto; }
 .incident-list, .service-grid { display: grid; gap: 12px; }
 .service-grid { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+.service-group { display: grid; gap: 12px; }
+.service-group summary { width: fit-content; cursor: pointer; color: var(--ink-soft); font-size: 1.05rem; font-weight: 800; }
+.service-group summary::marker { color: var(--brand); }
+.service-group-content { display: grid; gap: 12px; padding-left: 18px; border-left: 2px solid var(--border); }
 .incident-card { display: block; color: inherit; text-decoration: none; }
 .incident-card:hover, .incident-card:focus-visible { border-color: var(--brand); }
 .incident-meta, .badge-row { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; }

@@ -1,7 +1,8 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { parse } from 'yaml';
 import type { GithubComment, GithubIssue, GithubIssueEvent, IssueParseConfig } from '../src/data/issues';
 import { issueToIncident } from '../src/data/issues';
-import { issueToMaintenance } from '../src/data/maintenance';
+import { issueToMaintenance, parseMaintenanceTimes } from '../src/data/maintenance';
 import type { Incident } from '../src/types/status';
 
 const token = process.env.GITHUB_TOKEN;
@@ -12,11 +13,13 @@ if (!token || !owner || !repository) {
   process.exit(1);
 }
 const headers = { Accept: 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28' };
-async function github<T>(path: string): Promise<T> {
-  const response = await fetch(`https://api.github.com${path}`, { headers });
+async function github<T>(path: string, init?: RequestInit): Promise<T> {
+  const response = await fetch(`https://api.github.com${path}`, { ...init, headers: { ...headers, ...(init?.headers ?? {}) } });
   if (!response.ok) throw new Error(`GitHub API ${response.status}: ${path}`);
   return response.json() as Promise<T>;
 }
+const sourceConfig = parse(await readFile('config/statuspage.yml', 'utf8')) as { issues?: { autoCloseMaintenance?: boolean } };
+const autoCloseMaintenance = sourceConfig.issues?.autoCloseMaintenance === true;
 async function githubPages<T>(path: string): Promise<T[]> {
   const values: T[] = [];
   for (let page = 1; ; page += 1) {
@@ -34,6 +37,16 @@ for (const issue of issues) {
   if ('pull_request' in issue) continue;
   const issueServiceIds = issue.labels.map((label) => label.name.slice(8)).filter((id) => serviceIds.includes(id) && issue.labels.some((candidate) => candidate.name === `service/${id}`));
   if (issue.labels.some((label) => label.name === 'statuspage/maintenance')) {
+    const times = parseMaintenanceTimes(issue.body);
+    if (autoCloseMaintenance && issue.state === 'open' && !issue.labels.some((label) => label.name === 'state/cancelled') && times && new Date(times.endsAt).valueOf() <= Date.now()) {
+      await github(`/repos/${owner}/${repository}/issues/${issue.number}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+      issue.state = 'closed';
+      console.log(`Closed maintenance Issue #${issue.number} after its scheduled end.`);
+    }
     const event = issueToMaintenance(issue, issueServiceIds);
     if (event) maintenance.push(event);
     else console.warn(JSON.stringify({ issue: issue.number, warning: 'invalid maintenance fields or service labels; skipped' }));

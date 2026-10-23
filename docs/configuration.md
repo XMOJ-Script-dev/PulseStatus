@@ -120,7 +120,7 @@ Incidents come from valid GitHub Issues with:
 2. at least one known `service/<id>`
 3. exactly one `severity/minor`, `severity/major`, or `severity/critical`
 
-Maintenance comes from Issues with `statuspage/maintenance`, at least one known service label, and parseable `Starts at`, `Ends at`, and optional `Timezone` fields. The synchronizer writes `incidents-all.json`, `incidents-active.json`, and `maintenance.json`.
+Maintenance comes from Issues with `statuspage/maintenance`, at least one known service label, and parseable `Starts at`, `Ends at`, and optional `Timezone` fields. The synchronizer writes `incidents-all.json`, `incidents-active.json`, and `maintenance.json`. Set `issues.autoCloseMaintenance: true` to close an open maintenance Issue automatically after its end time; the default is `false`.` to close an open maintenance Issue automatically after its end time; the default is `false`.
 
 The maintenance parser accepts labels such as `Starts at:` and `Ends at:` followed by ISO timestamps. Always include an explicit offset:
 
@@ -131,6 +131,30 @@ Timezone: Asia/Singapore
 ```
 
 Invalid windows are skipped with a warning. A closed maintenance Issue is exported as completed; a `state/cancelled` label is exported as cancelled.
+
+## Service groups
+
+The service directory supports nested groups. Keep `group` on each service and optionally set `parentGroup` to place that group below another group. Group defaults are configured in `config/statuspage.yml`; each group can be expanded or collapsed independently by the administrator.
+
+```yaml
+serviceGroups:
+  Core services:
+    defaultExpanded: true
+  Supporting services:
+    defaultExpanded: false
+```
+
+For example, a service can place its group below another group:
+
+```json
+{
+  "id": "api",
+  "group": "Public APIs",
+  "parentGroup": "Core services"
+}
+```
+
+The generated service directory uses native accessible disclosure controls. Visitors can still expand or collapse groups while browsing; the configured `defaultExpanded` value controls the initial state.
 
 ## Automatic Incident publication
 

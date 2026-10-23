@@ -8,7 +8,7 @@ import { buildDailyUptime } from '../src/utils/status';
 const incidentsData = JSON.parse(await readFile('public/data/incidents-all.json', 'utf8')) as { incidents: Incident[] };
 const servicesData = JSON.parse(await readFile('public/data/services.json', 'utf8')) as { services: Service[] };
 const maintenanceData = JSON.parse(await readFile('public/data/maintenance.json', 'utf8')) as { maintenance: Maintenance[] };
-const sourceConfig = parse(await readFile('config/statuspage.yml', 'utf8')) as { site?: Partial<SiteConfig> };
+const sourceConfig = parse(await readFile('config/statuspage.yml', 'utf8')) as { site?: Partial<SiteConfig>; serviceGroups?: SiteConfig['serviceGroups'] };
 const site: SiteConfig = {
   name: sourceConfig.site?.name ?? 'PulseStatus',
   locale: sourceConfig.site?.locale ?? 'en',
@@ -20,6 +20,7 @@ const site: SiteConfig = {
   footerText: sourceConfig.site?.footerText,
   footerLinks: sourceConfig.site?.footerLinks,
   theme: sourceConfig.site?.theme ?? 'modern',
+  serviceGroups: sourceConfig.serviceGroups,
 };
 const generatedAt = new Date().toISOString();
 const incidents = incidentsData.incidents;

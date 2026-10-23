@@ -28,11 +28,18 @@ monitoring:
 issues:
   publishLabel: statuspage/incident
   maintenanceLabel: statuspage/maintenance
+  autoCloseMaintenance: true
   lockOfficialIncidents: false
   autoIncidentMentions: [PythonSmall-Q]
   autoIncidentSeverity: major
   trustedMaintainers: [PythonSmall-Q, boomzero, langningchen]
   trustedAssociations: [OWNER, MEMBER, COLLABORATOR]
+serviceGroups:
+  backend:
+    nameI18n:
+      en: Backend services
+      zh: 后端服务
+    defaultExpanded: false
 history:
   initialMonths: 3
   monthsPerLoad: 3

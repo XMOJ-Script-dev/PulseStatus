@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-11T14:32:13.226Z",
+  "generatedAt": "2026-10-23T14:47:00.585Z",
   "services": [
     {
       "id": "web",
@@ -17,10 +17,11 @@
       },
       "publicUrl": "https://xmoj-script.uk",
       "checkUrl": "https://xmoj-script.uk",
+      "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
-      "status": "down",
-      "latencyMs": 5016,
-      "lastCheckedAt": "2026-10-11T14:32:08.713Z"
+      "status": "operational",
+      "latencyMs": 458,
+      "lastCheckedAt": "2026-10-23T14:46:59.593Z"
     },
     {
       "id": "api",
@@ -36,6 +37,7 @@
         "zh": "XMOJ-Script 的 API 服务。"
       },
       "publicUrl": "https://api.xmoj-script.uk",
+      "checkIntervalMinutes": 10,
       "monitorMode": "manual",
       "status": "operational"
     },
@@ -53,6 +55,7 @@
         "zh": "公开图片和资源托管服务。"
       },
       "publicUrl": "https://assets.xmoj-script.uk",
+      "checkIntervalMinutes": 15,
       "monitorMode": "manual",
       "status": "operational"
     },
@@ -71,10 +74,11 @@
       },
       "publicUrl": "https://docs.xmoj-script.uk",
       "checkUrl": "https://docs.xmoj-script.uk",
+      "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
       "status": "operational",
-      "latencyMs": 4512,
-      "lastCheckedAt": "2026-10-11T14:32:13.226Z"
+      "latencyMs": 532,
+      "lastCheckedAt": "2026-10-23T14:46:59.593Z"
     }
   ]
 }

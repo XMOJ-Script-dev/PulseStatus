@@ -1,4 +1,4 @@
-import type { DailyUptime, Incident, OverallStatus, Service, Severity, Summary } from '../types/status';
+import type { DailyUptime, Incident, OverallStatus, Service, Severity, Summary, TimelineEntry } from '../types/status';
 
 const severityRank: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
 
@@ -9,6 +9,24 @@ export function sortIncidents(incidents: Incident[]): Incident[] {
     b.updatedAt.localeCompare(a.updatedAt) ||
     a.number - b.number
   );
+}
+
+export function mergeTimelineEntries(entries: TimelineEntry[], windowMinutes = 5): TimelineEntry[] {
+  const merged: TimelineEntry[] = [];
+  const windowMs = windowMinutes * 60 * 1000;
+  for (const entry of [...entries].sort((a, b) => a.at.localeCompare(b.at))) {
+    const previous = merged.at(-1);
+    const closeInTime = previous && Math.abs(Date.parse(entry.at) - Date.parse(previous.at)) <= windowMs;
+    const sameState = previous?.state && entry.state && previous.state === entry.state;
+    if (closeInTime && sameState) {
+      if (entry.type === 'state_change' && !entry.text && previous.type !== 'state_change') continue;
+      if (previous.type === 'state_change' && !previous.text && entry.type !== 'state_change') {
+        merged.pop();
+      }
+    }
+    merged.push(entry);
+  }
+  return merged;
 }
 
 export function monthForIncident(incident: Incident): string {

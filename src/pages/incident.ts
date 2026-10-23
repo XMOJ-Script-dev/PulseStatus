@@ -1,7 +1,7 @@
 import type { Incident } from '../types/status';
 import type { Service } from '../types/status';
 import { dataUrl, formatDate, layout, serviceName } from './shared';
-import { escapeHtml, renderMarkdown } from '../utils/status';
+import { escapeHtml, mergeTimelineEntries, renderMarkdown } from '../utils/status';
 import { statusLabel, t } from '../i18n';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
@@ -28,7 +28,8 @@ async function init(): Promise<void> {
       const service = servicesData.services.find((item) => item.id === id);
       return service ? serviceName(service) : id;
     });
-    document.querySelector('#incident-content')!.innerHTML = `<div class="incident-detail"><a class="back-link" href="${import.meta.env.BASE_URL}">← ${t('overview')}</a><div class="incident-meta"><span class="pill ${incident.severity}">${escapeHtml(statusLabel(incident.severity))}</span><span class="pill">${escapeHtml(statusLabel(incident.state))}</span></div><h1>${escapeHtml(incident.title)}</h1><p class="incident-services"><strong>${t('affectedServices')}:</strong> ${affectedServices.map(escapeHtml).join(', ')}</p><div class="markdown-content">${renderMarkdown(incident.bodyMarkdown ?? incident.bodySummary)}</div><p class="muted">${t('started')} ${formatDate(incident.startedAt)} · ${t('updatedAt')} ${formatDate(incident.updatedAt)}</p><a href="${escapeHtml(incident.url)}" rel="noreferrer">${t('viewOnGithub')}</a><div class="timeline">${incident.timeline.map((entry) => `<article class="timeline-item"><strong>${escapeHtml(entry.state ? statusLabel(entry.state) : entry.type)}</strong>${entry.text ? `<p>${escapeHtml(entry.text)}</p>` : ''}<small class="muted">${formatDate(entry.at)}${entry.author ? ` · ${escapeHtml(entry.author)}` : ''}</small></article>`).join('') || `<p class="muted">${t('noOfficialUpdates')}</p>`}</div></div>`;
+    const timeline = mergeTimelineEntries(incident.timeline);
+    document.querySelector('#incident-content')!.innerHTML = `<div class="incident-detail"><a class="back-link" href="${import.meta.env.BASE_URL}">← ${t('overview')}</a><div class="incident-meta"><span class="pill ${incident.severity}">${escapeHtml(statusLabel(incident.severity))}</span><span class="pill">${escapeHtml(statusLabel(incident.state))}</span></div><h1>${escapeHtml(incident.title)}</h1><p class="incident-services"><strong>${t('affectedServices')}:</strong> ${affectedServices.map(escapeHtml).join(', ')}</p><div class="markdown-content">${renderMarkdown(incident.bodyMarkdown ?? incident.bodySummary)}</div><p class="muted">${t('started')} ${formatDate(incident.startedAt)} · ${t('updatedAt')} ${formatDate(incident.updatedAt)}</p><a href="${escapeHtml(incident.url)}" rel="noreferrer">${t('viewOnGithub')}</a><div class="timeline">${timeline.map((entry) => `<article class="timeline-item"><strong>${escapeHtml(entry.state ? statusLabel(entry.state) : entry.type)}</strong>${entry.text ? `<p>${escapeHtml(entry.text)}</p>` : ''}<small class="muted">${formatDate(entry.at)}${entry.author ? ` · ${escapeHtml(entry.author)}` : ''}</small></article>`).join('') || `<p class="muted">${t('noOfficialUpdates')}</p>`}</div></div>`;
   } catch (error) {
     document.querySelector('#incident-content')!.innerHTML = `<div class="error">${t('incidentDataUnavailable')}</div>`;
     console.error(error);

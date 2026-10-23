@@ -2,13 +2,21 @@ import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
 import { maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
 import { applyCheck } from '../src/data/monitor';
-import { buildDailyUptime, buildSummary, groupHistoryByMonth, renderMarkdown } from '../src/utils/status';
+import { buildDailyUptime, buildSummary, groupHistoryByMonth, mergeTimelineEntries, renderMarkdown } from '../src/utils/status';
 import type { Incident } from '../src/types/status';
 
 const config = { publishLabel: 'statuspage/incident', serviceIds: ['web', 'api'], trustedMaintainers: ['maintainer'], trustedAssociations: ['OWNER'] };
 const issue = { number: 1, title: 'API outage', body: 'Users affected', html_url: 'https://github.com/o/r/issues/1', created_at: '2026-01-31T23:00:00Z', updated_at: '2026-02-01T00:00:00Z', closed_at: null, state: 'open' as const, labels: [{ name: 'statuspage/incident' }, { name: 'service/api' }, { name: 'severity/major' }, { name: 'state/investigating' }], user: { login: 'reporter' } };
 
 describe('Issue parsing', () => {
+  it('merges a nearby blank state event into its real update', () => {
+    const entries = [
+      { id: 'state', at: '2026-01-01T00:00:00Z', type: 'state_change' as const, state: 'monitoring' as const, text: '' },
+      { id: 'comment', at: '2026-01-01T00:02:00Z', type: 'comment' as const, state: 'monitoring' as const, text: 'Monitoring update.' },
+    ];
+    expect(mergeTimelineEntries(entries)).toEqual([entries[1]]);
+  });
+
   it('requires exactly one valid severity and known services', () => {
     expect(parseIssueLabels(issue.labels, config).valid).toBe(true);
     expect(parseIssueLabels([...issue.labels, { name: 'severity/minor' }], config).valid).toBe(false);

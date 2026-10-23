@@ -31,7 +31,7 @@ describe('Issue parsing', () => {
   it('publishes only the Issue Form impact summary', () => {
     const incident = issueToIncident({
       ...issue,
-      body: '### Affected service\n\napi\n\n### Impact summary\n\n**API errors** are affecting users.\n\n### Initial phase\n\ninvestigating',
+      body: '### Affected service\n\napi\n\n### Impact summary\n\n**API errors** are affecting users.\n\n---\n\nextra form content\n\n### Initial phase\n\ninvestigating',
     }, [], config)!;
     expect(incident.bodyMarkdown).toBe('**API errors** are affecting users.');
     expect(incident.bodySummary).toBe('API errors are affecting users.');

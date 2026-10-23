@@ -54,9 +54,9 @@ function impactSummary(body: string | null): string {
   const nextHeading = /^###\s+/;
   const start = lines.findIndex((line) => heading.test(line.trim()));
   if (start < 0) return (body ?? '').trim();
-  const end = lines.slice(start + 1).findIndex((line) => nextHeading.test(line.trim()));
+  const end = lines.slice(start + 1).findIndex((line) => nextHeading.test(line.trim()) || /^---\s*$/.test(line.trim()));
   const content = lines.slice(start + 1, end < 0 ? undefined : start + 1 + end);
-  return content.join('\n').replace(/^\s*---\s*$/gm, '').trim();
+  return content.join('\n').trim();
 }
 
 export function trustedComment(comment: GithubComment, config: Pick<IssueParseConfig, 'trustedMaintainers' | 'trustedAssociations'>): boolean {

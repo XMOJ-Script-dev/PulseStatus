@@ -28,6 +28,7 @@ const translations = {
     noPublishedIncidentForOutage: 'A service outage is detected, but no incident has been published yet.',
     noServiceData: 'No service data available', updated: 'Updated', checked: 'Checked',
     manualMonitoring: 'Manual monitoring', operational: 'Operational', degraded: 'Degraded performance',
+    down: 'Down',
     partialOutage: 'Partial outage', majorOutage: 'Major outage', limitedMonitoring: 'Limited monitoring',
     statusUnavailable: 'Status temporarily unavailable', dataUnavailable: 'Status data could not be loaded. Please try again later.',
     publishedFromGithub: 'Data is published from GitHub Issues. A failed refresh never becomes a false “all clear”.',
@@ -62,7 +63,7 @@ const translations = {
     active: '项进行中', noActiveIncidents: '当前没有正在进行的事故', services: '服务',
     noPublishedIncidentForOutage: '检测到服务中断，但尚未发布事故公告。',
     noServiceData: '暂无服务数据', updated: '更新于', checked: '检查于',
-    manualMonitoring: '人工维护', operational: '运行正常', degraded: '性能下降',
+    manualMonitoring: '人工维护', operational: '运行正常', degraded: '性能下降', down: '服务中断',
     partialOutage: '部分中断', majorOutage: '重大中断', limitedMonitoring: '监控数据有限',
     statusUnavailable: '状态暂时无法加载', dataUnavailable: '状态数据无法加载，请稍后重试。',
     publishedFromGithub: '数据来自 GitHub Issues。刷新失败时不会伪装成“全部正常”。',
@@ -85,6 +86,8 @@ export function statusLabel(status: string): string {
   if (status === 'monitoring') return t('limitedMonitoring');
   if (status === 'manually_reported') return t('manualMonitoring');
   if (status === 'operational') return t('operational');
+  if (status === 'down') return t('down');
+  if (status === 'degraded') return t('degraded');
   if (status === 'degraded_performance') return t('degraded');
   if (status === 'partial_outage') return t('partialOutage');
   if (status === 'major_outage') return t('majorOutage');

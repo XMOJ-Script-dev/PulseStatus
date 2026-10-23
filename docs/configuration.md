@@ -55,6 +55,67 @@ The build emits this configuration as `public/data/site.js`. Each HTML entry poi
 
 The theme is a deployment setting, not a visitor preference. All visitors receive the same `site.theme` value. For organization-specific styling, edit `src/styles/custom.css`; it is bundled after the built-in stylesheet and is therefore the supported override layer.
 
+## Repository and monitoring
+
+The `repository` section identifies the GitHub repository used for Issue synchronization:
+
+```yaml
+repository:
+  owner: Acme
+  name: service-status
+```
+
+The `monitoring` section controls probe scheduling and optional automatic Incident publication:
+
+| Key | Description |
+| --- | --- |
+| `monitoring.mode` | Default mode for services without `monitorMode`: `scheduled`, `manual`, or `hybrid`. |
+| `monitoring.schedule` | Documentation/configuration value for the workflow schedule. The workflow currently runs every five minutes. |
+| `monitoring.probeIntervalMinutes` | Default minimum interval between real requests. |
+| `monitoring.timeoutMs` | Maximum duration of a probe request. |
+| `monitoring.failuresToDown` | Consecutive failed probes before a service is considered down. |
+| `monitoring.successesToRecover` | Consecutive successful probes before a service recovers. |
+| `monitoring.autoPublishIncident` | Enables automatic Incident Issue creation and recovery closure. |
+| `monitoring.failuresToIncident` | Consecutive failed probes required to create an automated Incident. |
+| `monitoring.recoverySuccessesToCloseIncident` | Consecutive successful probes required to close an automated Incident. |
+| `monitoring.historyRetentionDays` | Retention window for probe history. |
+
+Service-level `monitorMode` takes precedence over the default. `manual` services are never probed and cannot trigger automatic incidents.
+
+## Issue policy
+
+```yaml
+issues:
+  publishLabel: statuspage/incident
+  maintenanceLabel: statuspage/maintenance
+  autoCloseMaintenance: true
+  lockOfficialIncidents: false
+  autoIncidentMentions: [oncall-user]
+  autoIncidentSeverity: major
+  trustedMaintainers: [oncall-user]
+  trustedAssociations: [OWNER, MEMBER, COLLABORATOR]
+```
+
+`publishLabel` and `maintenanceLabel` are the labels recognized by the synchronizer. `trustedMaintainers` and `trustedAssociations` control which comments can become public operational updates. `autoIncidentSeverity` must be `minor`, `major`, or `critical`.
+
+When `autoCloseMaintenance` is `true`, the workflow closes an open, non-cancelled maintenance Issue after its `Ends at` time. It uses GitHub's `completed` state reason. This applies only to maintenance Issues and does not close manually managed Incidents.
+
+The workflow needs `contents: write` and `issues: write` permissions to persist monitoring state and update Issues.
+
+## History and embed settings
+
+```yaml
+history:
+  initialMonths: 3
+  monthsPerLoad: 3
+
+embed:
+  enabled: true
+  pollIntervalMs: 300000
+```
+
+`initialMonths` and `monthsPerLoad` control the monthly Incident archives loaded by the History page. The embed is read-only and polls published `summary.json`; its browser-side minimum interval is 60 seconds even when a smaller value is configured.
+
 ## Services
 
 Edit `config/services.json`. Each service must have a stable unique `id`; the ID is used in GitHub labels (`service/<id>`), generated data, service URLs, and uptime records. `nameI18n` and `descriptionI18n` can provide localized text. `monitorMode` can be `scheduled`, `manual`, or `hybrid`.
@@ -74,7 +135,7 @@ Recommended service configuration:
   "id": "api",
   "name": "Public API",
   "nameI18n": { "en": "Public API", "zh": "公共 API" },
-  "group": "Core services",
+  "group": "backend",
   "description": "The API used by public clients.",
   "descriptionI18n": {
     "en": "The API used by public clients.",
@@ -120,7 +181,7 @@ Incidents come from valid GitHub Issues with:
 2. at least one known `service/<id>`
 3. exactly one `severity/minor`, `severity/major`, or `severity/critical`
 
-Maintenance comes from Issues with `statuspage/maintenance`, at least one known service label, and parseable `Starts at`, `Ends at`, and optional `Timezone` fields. The synchronizer writes `incidents-all.json`, `incidents-active.json`, and `maintenance.json`. Set `issues.autoCloseMaintenance: true` to close an open maintenance Issue automatically after its end time; the default is `false`.` to close an open maintenance Issue automatically after its end time; the default is `false`.
+Maintenance comes from Issues with `statuspage/maintenance`, at least one known service label, and parseable `Starts at`, `Ends at`, and optional `Timezone` fields. The synchronizer writes `incidents-all.json`, `incidents-active.json`, and `maintenance.json`. Set `issues.autoCloseMaintenance: true` to close an open maintenance Issue automatically after its end time. The current repository configuration enables this behavior.
 
 The maintenance parser accepts labels such as `Starts at:` and `Ends at:` followed by ISO timestamps. Always include an explicit offset:
 
@@ -134,13 +195,14 @@ Invalid windows are skipped with a warning. A closed maintenance Issue is export
 
 ## Service groups
 
-The service directory supports nested groups. Keep `group` on each service and optionally set `parentGroup` to place that group below another group. Group defaults are configured in `config/statuspage.yml`; each group can be expanded or collapsed independently by the administrator.
+The service directory supports nested groups. `group` is optional: omit it for services that should appear outside a group. Set `parentGroup` on a service when its group belongs below another group. Group defaults and localized labels are configured in `config/statuspage.yml`; Incident and Maintenance sections are never grouped.
 
 ```yaml
 serviceGroups:
-  Core services:
-    defaultExpanded: true
-  Supporting services:
+  backend:
+    nameI18n:
+      en: Backend services
+      zh: 后端服务
     defaultExpanded: false
 ```
 
@@ -149,12 +211,11 @@ For example, a service can place its group below another group:
 ```json
 {
   "id": "api",
-  "group": "Public APIs",
-  "parentGroup": "Core services"
+  "group": "backend"
 }
 ```
 
-The generated service directory uses native accessible disclosure controls. Visitors can still expand or collapse groups while browsing; the configured `defaultExpanded` value controls the initial state.
+`nameI18n` uses the browser's exact locale first, then its base language, and finally `name` or the group key. The generated service directory uses native accessible disclosure controls. Visitors can still expand or collapse groups while browsing; `defaultExpanded` controls the initial state.
 
 ## Automatic Incident publication
 

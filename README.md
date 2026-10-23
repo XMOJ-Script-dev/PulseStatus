@@ -12,7 +12,7 @@ PulseStatus turns GitHub Issues into a trustworthy public information center for
 2. Edit `config/statuspage.yml` and `config/services.json` with your organization, services, URLs, timezone, and trusted maintainers.
 3. Add the labels listed in the administrator checklist below.
 4. Enable GitHub Pages with **GitHub Actions** as the source. The first workflow run publishes the site at `https://OWNER.github.io/REPOSITORY/`.
-5. Replace the example GitHub link in `src/pages/shared.ts` if your repository is private to the template's example.
+5. Replace the example GitHub repository link in `config/statuspage.yml` and any customized footer links if your repository is private to the template's example.
 
 The template deliberately starts with an empty, non-demo data snapshot. It never presents fabricated incidents or health metrics.
 
@@ -237,7 +237,7 @@ Edit `src/styles/custom.css`, not `dist/` or generated files. Check selector spe
 
 The Actions workflow performs a full, paginated Issues refresh. It skips invalid incident labels rather than exposing ambiguous events. `statuspage/incident`, one or more known `service/*`, exactly one `severity/minor|major|critical`, and an optional `state/*` label are required. `state/resolved` or a closed Issue removes an incident from the active list and archives it by its UTC start month.
 
-The default configuration is `manual`, so it never probes service URLs. `scheduled` and `hybrid` services may define a `checkUrl` in the service configuration; checks use bounded timeouts and failures do not erase incident data.
+The repository example uses `hybrid` as the default, with `web` and `docs` scheduled and `api` and `assets` manual. `scheduled` and `hybrid` services may define a `checkUrl`; checks use bounded timeouts and failures do not erase incident data.
 
 ### Automatic Incident settings
 
@@ -262,6 +262,7 @@ issues:
 - `recoverySuccessesToCloseIncident`: consecutive successful checks required before closing an automated Incident.
 - `autoIncidentMentions`: GitHub usernames to mention in the generated Issue. Use usernames without `@`.
 - `autoIncidentSeverity`: `minor`, `major`, or `critical`.
+- `issues.autoCloseMaintenance`: when `true`, closes an open maintenance Issue after its end time using GitHub's `completed` state reason. The repository example enables it.
 
 The workflow persists counters in `public/data/monitor-state.json` with a `[skip ci]` commit. The workflow therefore needs `contents: write` and `issues: write` permissions. Do not remove the HTML marker in an automated Issue; it prevents duplicate Issues and lets recovery identify the correct Issue.
 
@@ -285,6 +286,21 @@ Every service card links to `service.html?id=<service-id>`. The detail page incl
 Daily uptime is incident-derived: the builder merges overlapping incident intervals per service, subtracts downtime from each UTC day, and writes [`public/data/uptime.json`](public/data/uptime.json). An open incident extends to snapshot generation time. A day without published downtime is shown as 100%, but this must not be interpreted as probe coverage when the service uses manual monitoring.
 
 Actual scheduled and hybrid probe results are stored separately in [`public/data/probe-history.json`](public/data/probe-history.json). Each real request appends one immutable result with its timestamp, status, HTTP status code, and latency. Skipped checks do not append a record, and manual services never receive probe records.
+
+## Service groups
+
+Services may be grouped in the directory without changing their service IDs or Issue labels. In the current example, `api` and `assets` use the collapsed, localized `backend` group; `web` and `docs` are intentionally ungrouped.
+
+```yaml
+serviceGroups:
+  backend:
+    nameI18n:
+      en: Backend services
+      zh: 后端服务
+    defaultExpanded: false
+```
+
+Set `"group": "backend"` in a service entry to join the group. Add `"parentGroup": "another-group"` for nested groups. Omit `group` to keep a service at the top level. The page uses accessible disclosure controls, and visitors can override the administrator's initial expanded/collapsed state.
 
 ## Historical uptime and display styles
 

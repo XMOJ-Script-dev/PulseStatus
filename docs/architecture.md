@@ -61,10 +61,11 @@ sequenceDiagram
 4. **Synchronize Issues.** `sync-issues.ts` downloads paginated Issues, rejects invalid labels, keeps only trusted comments, and writes public incident/maintenance snapshots.
 5. **Probe services.** `check-services.ts` checks only scheduled or hybrid services with a `checkUrl`, and only when the service-specific interval has elapsed. Manual services are skipped unconditionally.
 6. **Publish automated incidents.** `auto-publish-incidents.ts` consumes the current probe result and persisted counters. It creates one marked Issue after the configured failure threshold and closes it after the configured recovery threshold.
-7. **Persist monitoring state.** The workflow commits the counter file and append-only probe history with `[skip ci]`, so the state survives the next scheduled run without recursively triggering the workflow.
-8. **Build public data.** `build-public-data.ts` derives summary status, incident history, incident-derived uptime, and site branding data.
-9. **Configure Pages and build.** `configure-pages` supplies the actual base path. Project Pages use `/PulseStatus/`; a configured custom domain uses `/`.
-10. **Deploy.** The Pages artifact is uploaded and deployed. GitHub Pages serves the result without a server process.
+7. **Close completed maintenance.** `sync-issues.ts` closes an open, non-cancelled maintenance Issue after its end time when `issues.autoCloseMaintenance` is enabled.
+8. **Persist monitoring state.** The workflow commits the counter file, service snapshot, and append-only probe history with `[skip ci]`, so state survives the next scheduled run without recursively triggering the workflow.
+9. **Build public data.** `build-public-data.ts` derives summary status, incident history, incident-derived uptime, service-group configuration, and site branding data.
+10. **Configure Pages and build.** `configure-pages` supplies the actual base path. Project Pages use `/PulseStatus/`; a configured custom domain uses `/`.
+11. **Deploy.** The Pages artifact is uploaded and deployed. GitHub Pages serves the result without a server process.
 
 ## Monitoring state machine
 
@@ -121,7 +122,7 @@ If automatic publication is disabled, counters are still safe to persist, but th
 
 | Source | Read by | Meaning |
 | --- | --- | --- |
-| `config/statuspage.yml` | validators, monitor, data builder | Site branding, monitoring defaults, thresholds, labels, and bot behavior. |
+| `config/statuspage.yml` | validators, monitor, data builder | Site branding, monitoring defaults, thresholds, labels, Issue policy, service groups, history, and embed behavior. |
 | `config/services.json` | validators, monitor, data builder | Stable service IDs, URLs, display text, monitoring mode, and interval overrides. |
 | GitHub Issue labels | `sync-issues.ts` | Publication authorization, service association, severity, and incident state. |
 
@@ -137,7 +138,7 @@ These files describe the current run and can be regenerated:
 | `public/data/incidents-active.json` | `sync-issues.ts` | Valid active incidents only. |
 | `public/data/incidents-all.json` | `sync-issues.ts` | Valid active and resolved incidents. |
 | `public/data/maintenance.json` | `sync-issues.ts` | Valid maintenance events and states. |
-| `public/data/site.js` | `build-public-data.ts` | Sanitized site identity and branding configuration. |
+| `public/data/site.js` | `build-public-data.ts` | Sanitized site identity, branding, and service-group configuration. |
 
 ### Append-oriented and historical data
 

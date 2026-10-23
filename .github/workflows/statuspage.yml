@@ -101,7 +101,23 @@ jobs:
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           fi
           git add public/data/monitor-state.json public/data/probe-history.json
-          git diff --cached --quiet || (git commit -m "chore: persist monitor state [skip ci]" && git push)
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: persist monitor state [skip ci]"
+            pushed=false
+            for attempt in 1 2 3; do
+              if git fetch origin main && git rebase origin/main && git push; then
+                pushed=true
+                break
+              fi
+              if [ -d .git/rebase-merge ] || [ -d .git/rebase-apply ]; then
+                git rebase --abort
+              fi
+              sleep $((attempt * 2))
+            done
+            if [ "$pushed" != true ]; then
+              echo "::warning::Could not persist monitor state because main changed concurrently; continuing with the current build."
+            fi
+          fi
       - run: npm run build-data && npm run generate-badges
         env:
           PULSE_MONITOR_MODE: hybrid

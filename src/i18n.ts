@@ -12,9 +12,9 @@ const translations = {
     incidentHistory: 'Incident history', resolvedEvents: 'Resolved events',
     historyIntro: 'Events are grouped by the UTC month in which they started.',
     loadingHistory: 'Loading history…', loadingOlder: 'Loading older months…', historyLoaded: 'History loaded.',
-    loadMore: 'Load more', incidentsInMonth: 'incidents', noIncidentsInMonth: 'No incidents in this month.',
+    loadMore: 'Load more', incidentsInMonth: 'incidents', maintenanceInMonth: 'maintenance', noIncidentsInMonth: 'No incidents in this month.',
     noHistory: 'No resolved incidents have been published yet.',
-    uptimeHistory: 'Service uptime history', uptimeIntro: 'Daily uptime for the past 90 days, calculated from published incident durations.',
+    uptimeHistory: 'Service uptime history', uptimeIntro: 'Daily uptime for the past 90 days, calculated from published incident durations; planned maintenance is excluded.', uptime90days: 'Uptime over the past 90 days',
     uptimeUnavailable: 'Uptime history is temporarily unavailable.', uptimeAsOf: 'Last calculated', uptimeAverage: '90-day uptime',
     uptimeLegend: 'Daily uptime', uptimeDay: 'Uptime for',
     serviceDetails: 'Service details', relatedIncidents: 'Related incidents', relatedMaintenance: 'Related maintenance',
@@ -30,8 +30,8 @@ const translations = {
     noPublishedIncidentForOutage: 'A service outage is detected, but no incident has been published yet.',
     noServiceData: 'No service data available', updated: 'Updated', checked: 'Checked',
     manualMonitoring: 'Manual monitoring', operational: 'Operational', degraded: 'Degraded performance',
-    down: 'Down',
-    partialOutage: 'Partial outage', majorOutage: 'Major outage', limitedMonitoring: 'Limited monitoring',
+    down: 'Down', underMaintenance: 'Under maintenance',
+    partialOutage: 'Partial outage', majorOutage: 'Major outage', allDown: 'All systems down', limitedMonitoring: 'Limited monitoring',
     statusUnavailable: 'Status temporarily unavailable', dataUnavailable: 'Status data could not be loaded. Please try again later.',
     publishedFromGithub: 'Data is published from GitHub Issues. A failed refresh never becomes a false “all clear”.',
     severity: { minor: 'Minor', major: 'Major', critical: 'Critical' },
@@ -50,9 +50,9 @@ const translations = {
     incidentHistory: '事故历史', resolvedEvents: '已解决事件',
     historyIntro: '事件按其开始时间所在的 UTC 月份归档。',
     loadingHistory: '正在加载历史记录…', loadingOlder: '正在加载更早月份…', historyLoaded: '历史记录已加载。',
-    loadMore: '加载更多', incidentsInMonth: '项事故', noIncidentsInMonth: '本月没有事故记录。',
+    loadMore: '加载更多', incidentsInMonth: '项事故', maintenanceInMonth: '项维护', noIncidentsInMonth: '本月没有事故记录。',
     noHistory: '暂未发布已解决的事故记录。',
-    uptimeHistory: '服务历史可用率', uptimeIntro: '过去 90 天的每日可用率，基于已发布事故的持续时间计算。',
+    uptimeHistory: '服务历史可用率', uptimeIntro: '过去 90 天的每日可用率，基于已发布事故的持续时间计算，计划内维护时间不计入故障。', uptime90days: '过去 90 天可用率',
     uptimeUnavailable: '可用率历史暂时无法加载。', uptimeAsOf: '最后计算时间', uptimeAverage: '90 天可用率',
     uptimeLegend: '每日可用率', uptimeDay: '可用率日期',
     serviceDetails: '服务详情', relatedIncidents: '相关事故', relatedMaintenance: '相关维护',
@@ -68,7 +68,8 @@ const translations = {
     noPublishedIncidentForOutage: '检测到服务中断，但尚未发布事故公告。',
     noServiceData: '暂无服务数据', updated: '更新于', checked: '检查于',
     manualMonitoring: '人工维护', operational: '运行正常', degraded: '性能下降', down: '服务中断',
-    partialOutage: '部分中断', majorOutage: '重大中断', limitedMonitoring: '监控数据有限',
+    underMaintenance: '维护中',
+    partialOutage: '部分中断', majorOutage: '重大中断', allDown: '全部服务中断', limitedMonitoring: '监控数据有限',
     statusUnavailable: '状态暂时无法加载', dataUnavailable: '状态数据无法加载，请稍后重试。',
     publishedFromGithub: '数据来自 GitHub Issues。刷新失败时不会伪装成“全部正常”。',
     severity: { minor: '轻微', major: '重大', critical: '严重' },
@@ -92,10 +93,12 @@ export function statusLabel(status: string): string {
   if (status === 'manually_reported') return t('manualMonitoring');
   if (status === 'operational') return t('operational');
   if (status === 'down') return t('down');
+  if (status === 'maintenance') return t('underMaintenance');
   if (status === 'degraded') return t('degraded');
   if (status === 'degraded_performance') return t('degraded');
   if (status === 'partial_outage') return t('partialOutage');
   if (status === 'major_outage') return t('majorOutage');
+  if (status === 'all_down') return t('allDown');
   if (status === 'scheduled') return t('scheduled');
   if (status === 'in_progress') return t('inProgress');
   if (status === 'completed') return t('completed');

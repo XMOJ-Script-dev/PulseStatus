@@ -1,6 +1,6 @@
-import type { Incident, Maintenance, Service, Summary } from '../types/status';
-import { sortIncidents } from '../utils/status';
-import { base, dataUrl, formatDate, incidentCard, layout, maintenanceCard, serviceCard, statusClass } from './shared';
+import type { GroupStatus, Incident, Maintenance, Service, Summary, UptimeHistory } from '../types/status';
+import { groupStatus, groupStatusRank, sortIncidents } from '../utils/status';
+import { base, dataUrl, formatDate, incidentCard, layout, maintenanceCard, serviceCard, statusClass, uptimeLevel } from './shared';
 import { language, statusLabel, t } from '../i18n';
 import { escapeHtml } from '../utils/status';
 
@@ -13,13 +13,27 @@ async function load<T>(path: string): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+function uptimeStrip(uptime: UptimeHistory): string {
+  const cells = uptime.days.map((day) => {
+    const values = Object.values(day.services).filter((value): value is number => typeof value === 'number');
+    if (!values.length) return '';
+    const average = values.reduce((total, value) => total + value, 0) / values.length;
+    const label = `${day.date}: ${average.toFixed(3)}%`;
+    return `<span class="uptime-day has-tooltip" data-level="${uptimeLevel(average)}" data-tooltip="${escapeHtml(label)}" tabindex="0" aria-label="${escapeHtml(label)}"></span>`;
+  }).join('');
+  const values = uptime.days.flatMap((day) => Object.values(day.services)).filter((value): value is number => typeof value === 'number');
+  const average = values.length ? (values.reduce((total, value) => total + value, 0) / values.length).toFixed(2) : null;
+  return `<div class="directory-uptime"><div class="directory-uptime-heading"><span>${t('uptime90days')}</span>${average ? `<strong>${average}%</strong>` : ''}</div><div class="uptime-days directory-uptime-strip" role="img" aria-label="${t('uptime90days')}">${cells}</div></div>`;
+}
+
 async function render(): Promise<void> {
   try {
-    const [summary, incidents, services, maintenance] = await Promise.all([
+    const [summary, incidents, services, maintenance, uptime] = await Promise.all([
       load<Summary>('summary.json'),
       load<{ schemaVersion: 1; generatedAt: string; incidents: Incident[] }>('incidents-active.json'),
       load<{ schemaVersion: 1; generatedAt: string; services: Service[] }>('services.json'),
       load<{ schemaVersion: 1; generatedAt: string; maintenance: Maintenance[] }>('maintenance.json'),
+      load<UptimeHistory>('uptime.json'),
     ]);
     const status = document.querySelector<HTMLDivElement>('#status')!;
     status.className = `status-banner ${statusClass(summary)}`;
@@ -28,7 +42,7 @@ async function render(): Promise<void> {
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
     document.querySelector('#incidents')!.innerHTML = active.length ? active.map((incident) => incidentCard(incident, services.services)).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${outageWithoutIncident ? t('noPublishedIncidentForOutage') : t('noIncidentsNote')}</span></p>`;
-    const visibleMaintenance = [...maintenance.maintenance].sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+    const visibleMaintenance = [...maintenance.maintenance].filter((item) => item.state === 'scheduled' || item.state === 'in_progress').sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     document.querySelector('#maintenance-count')!.textContent = `${visibleMaintenance.length} ${t('maintenanceItems')}`;
     document.querySelector('#maintenance')!.innerHTML = visibleMaintenance.length ? visibleMaintenance.map((item) => maintenanceCard(item, services.services)).join('') : `<p class="card empty">${t('noMaintenance')}</p>`;
     const site = window.PulseStatusConfig;
@@ -36,17 +50,32 @@ async function render(): Promise<void> {
     const parentByGroup = new Map<string, string | undefined>();
     services.services.filter((service) => service.group).forEach((service) => parentByGroup.set(service.group!, service.parentGroup ?? groupConfig[service.group!]?.parentGroup));
     const groupLabel = (group: string): string => groupConfig[group]?.nameI18n?.[language] ?? groupConfig[group]?.nameI18n?.[language.split('-')[0]] ?? groupConfig[group]?.name ?? group;
+    const groupChildren = (group: string): string[] => [...parentByGroup.entries()].filter(([, parent]) => parent === group).map(([name]) => name);
+    const aggregateStatus = (memberStatus: GroupStatus, childStatuses: GroupStatus[]): GroupStatus => [memberStatus, ...childStatuses].reduce((worst, status) => (groupStatusRank[status] < groupStatusRank[worst] ? status : worst), memberStatus);
+    const statusByGroup = new Map<string, GroupStatus>();
+    const computeGroupStatus = (group: string, visiting: Set<string>): GroupStatus => {
+      if (visiting.has(group)) return 'unknown';
+      const memoized = statusByGroup.get(group);
+      if (memoized !== undefined) return memoized;
+      const members = services.services.filter((service) => service.group === group);
+      const childStatuses = groupChildren(group).map((child) => computeGroupStatus(child, new Set([...visiting, group])));
+      const status = aggregateStatus(groupStatus(members, active), childStatuses);
+      statusByGroup.set(group, status);
+      return status;
+    };
+    [...parentByGroup.keys()].forEach((group) => computeGroupStatus(group, new Set()));
+    const bySeverity = (a: string, b: string): number => groupStatusRank[statusByGroup.get(a) ?? 'unknown'] - groupStatusRank[statusByGroup.get(b) ?? 'unknown'] || a.localeCompare(b);
     const renderGroup = (group: string, depth: number, visiting: Set<string>): string => {
       if (visiting.has(group)) return '';
       const members = services.services.filter((service) => service.group === group);
-      const children = [...parentByGroup.entries()].filter(([name, parent]) => parent === group).map(([name]) => name).sort();
+      const children = groupChildren(group).sort(bySeverity);
       const nested = children.map((child) => renderGroup(child, depth + 1, new Set([...visiting, group]))).join('');
-      const expanded = groupConfig[group]?.defaultExpanded !== false;
-      return `<details class="service-group" data-depth="${depth}"${expanded ? ' open' : ''}><summary>${escapeHtml(groupLabel(group))}</summary><div class="service-group-content">${members.length ? `<div class="service-grid">${members.map((service) => serviceCard(service, active)).join('')}</div>` : ''}${nested}</div></details>`;
+      const status = statusByGroup.get(group) ?? 'unknown';
+      return `<div class="service-group" data-depth="${depth}"><div class="service-group-header"><span class="service-group-name">${escapeHtml(groupLabel(group))}</span><span class="pill ${status.replace('_', '-')}">${escapeHtml(statusLabel(status))}</span></div>${members.map((service) => serviceCard(service, active, maintenance.maintenance)).join('')}${nested}</div>`;
     };
-    const roots = [...parentByGroup.keys()].filter((group) => !parentByGroup.get(group) || !parentByGroup.has(parentByGroup.get(group)!)).sort();
+    const roots = [...parentByGroup.keys()].filter((group) => !parentByGroup.get(group) || !parentByGroup.has(parentByGroup.get(group)!)).sort(bySeverity);
     const ungrouped = services.services.filter((service) => !service.group);
-    document.querySelector('#services')!.innerHTML = services.services.length ? `${ungrouped.length ? `<div class="service-grid">${ungrouped.map((service) => serviceCard(service, active)).join('')}</div>` : ''}${roots.map((group) => renderGroup(group, 0, new Set())).join('')}` : '<p class="card empty">No service data available</p>';
+    document.querySelector('#services')!.innerHTML = services.services.length ? `${uptimeStrip(uptime)}${ungrouped.map((service) => serviceCard(service, active, maintenance.maintenance)).join('')}${roots.map((group) => renderGroup(group, 0, new Set())).join('')}` : '<p class="card empty">No service data available</p>';
   } catch (error) {
     document.querySelector('#status')!.outerHTML = `<div class="status-banner unknown error" role="alert"><span class="status-dot"></span><strong>${t('statusUnavailable')}</strong></div>`;
     document.querySelector('#incidents')!.innerHTML = `<p class="card error">${t('dataUnavailable')}</p>`;

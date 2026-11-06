@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
-import { maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
+import { issueToMaintenance, maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
 import { applyCheck } from '../src/data/monitor';
-import { buildDailyUptime, buildSummary, groupHistoryByMonth, mergeTimelineEntries, renderMarkdown } from '../src/utils/status';
-import type { Incident } from '../src/types/status';
+import { buildDailyUptime, buildSummary, groupHistoryByMonth, groupMaintenanceByMonth, groupStatus, groupStatusRank, mergeTimelineEntries, renderMarkdown } from '../src/utils/status';
+import type { Incident, Maintenance, Service } from '../src/types/status';
 
 const config = { publishLabel: 'statuspage/incident', serviceIds: ['web', 'api'], trustedMaintainers: ['maintainer'], trustedAssociations: ['OWNER'] };
 const issue = { number: 1, title: 'API outage', body: 'Users affected', html_url: 'https://github.com/o/r/issues/1', created_at: '2026-01-31T23:00:00Z', updated_at: '2026-02-01T00:00:00Z', closed_at: null, state: 'open' as const, labels: [{ name: 'statuspage/incident' }, { name: 'service/api' }, { name: 'severity/major' }, { name: 'state/investigating' }], user: { login: 'reporter' } };
@@ -66,6 +66,36 @@ describe('history and maintenance', () => {
     expect(parseMaintenanceTimes('no timestamps')).toBeNull();
     expect(parseMaintenanceTimes('### Starts at\n2026-10-15T02:00:00+08:00\n### Ends at\n2026-10-15T03:00:00+08:00\n### Timezone\nAsia/Singapore')).not.toBeNull();
   });
+  it('groups completed and cancelled maintenance by start month, newest first', () => {
+    const item = (id: string, startsAt: string, state: Maintenance['state']): Maintenance => ({ id, title: '', startsAt, endsAt: startsAt, timezone: 'UTC', serviceIds: ['api'], url: '', state });
+    const groups = groupMaintenanceByMonth([
+      item('a', '2026-02-10T00:00:00Z', 'completed'),
+      item('b', '2026-01-15T00:00:00Z', 'cancelled'),
+      item('c', '2026-02-01T00:00:00Z', 'completed'),
+      item('d', '2026-03-01T00:00:00Z', 'scheduled'),
+      item('e', '2026-03-02T00:00:00Z', 'in_progress'),
+    ]);
+    expect([...groups.keys()]).toEqual(['2026-02', '2026-01']);
+    expect(groups.get('2026-02')!.map((entry) => entry.id)).toEqual(['a', 'c']);
+  });
+  it('excludes planned maintenance windows from downtime', () => {
+    const incidents: Incident[] = [
+      { id: '1', number: 1, title: '', url: '', bodySummary: '', startedAt: '2026-10-15T01:00:00Z', updatedAt: '2026-10-15T04:00:00Z', closedAt: '2026-10-15T04:00:00Z', state: 'resolved', severity: 'major', serviceIds: ['api'], isActive: false, timeline: [] },
+    ];
+    const window = { id: 'm1', number: 1, title: '', startsAt: '2026-10-15T02:00:00Z', endsAt: '2026-10-15T03:00:00Z', timezone: 'UTC', serviceIds: ['api'], url: '', state: 'in_progress' } as Maintenance;
+    const [day] = buildDailyUptime(incidents, ['api'], '2026-10-16T00:00:00Z', 1, [], [window]);
+    expect(day.services.api).toBe(91.667);
+    const [cancelledDay] = buildDailyUptime(incidents, ['api'], '2026-10-16T00:00:00Z', 1, [], [{ ...window, state: 'cancelled' }]);
+    expect(cancelledDay.services.api).toBe(87.5);
+    const [unrelatedDay] = buildDailyUptime(incidents, ['api'], '2026-10-16T00:00:00Z', 1, [], [{ ...window, serviceIds: ['web'] }]);
+    expect(unrelatedDay.services.api).toBe(87.5);
+  });
+  it('keeps a delayed maintenance that overruns its window in progress', () => {
+    const base = { number: 7, title: 'Delayed window', body: 'Starts at: 2026-10-15T02:00:00+08:00\nEnds at: 2026-10-15T03:00:00+08:00', html_url: 'https://github.com/x/y/issues/7', state: 'open' as const, labels: [{ name: 'state/delayed' }] };
+    expect(issueToMaintenance(base, ['web'], new Date('2026-10-15T00:00:00Z'))?.state).toBe('in_progress');
+    expect(issueToMaintenance({ ...base, labels: [] }, ['web'], new Date('2026-10-15T00:00:00Z'))?.state).toBe('completed');
+    expect(issueToMaintenance({ ...base, labels: [{ name: 'state/cancelled' }] }, ['web'], new Date('2026-10-15T00:00:00Z'))?.state).toBe('cancelled');
+  });
 
   it('calculates daily uptime from merged downtime intervals', () => {
     const incidents: Incident[] = [
@@ -111,5 +141,59 @@ describe('monitoring thresholds', () => {
       expect(summary.activeIncidentCount).toBe(0);
       expect(summary.hasActiveIncident).toBe(false);
     });
+  });
+});
+
+describe('group status', () => {
+  const service = (id: string, status: Service['status']) => ({ id, name: id, description: '', status, monitorMode: 'manual' }) as Service;
+  const incident = (severity: Incident['severity'], serviceIds: string[], isActive = true) =>
+    ({ id: severity, number: 1, title: '', url: '', bodySummary: '', startedAt: '', updatedAt: '', state: 'investigating', severity, serviceIds, isActive, timeline: [] }) as Incident;
+
+  it('ranks more severe statuses first', () => {
+    expect(groupStatusRank.major_outage).toBeLessThan(groupStatusRank.all_down);
+    expect(groupStatusRank.all_down).toBeLessThan(groupStatusRank.partial_outage);
+    expect(groupStatusRank.partial_outage).toBeLessThan(groupStatusRank.degraded_performance);
+    expect(groupStatusRank.degraded_performance).toBeLessThan(groupStatusRank.unknown);
+    expect(groupStatusRank.unknown).toBeLessThan(groupStatusRank.operational);
+  });
+
+  it('returns operational when all members are operational', () => {
+    expect(groupStatus([service('web', 'operational'), service('api', 'operational')], [])).toBe('operational');
+  });
+
+  it('returns partial_outage when one member is down', () => {
+    expect(groupStatus([service('web', 'operational'), service('api', 'down')], [])).toBe('partial_outage');
+  });
+
+  it('returns all_down when every member is down', () => {
+    expect(groupStatus([service('web', 'down'), service('api', 'down')], [])).toBe('all_down');
+  });
+
+  it('returns degraded_performance when members are degraded but none are down', () => {
+    expect(groupStatus([service('web', 'operational'), service('api', 'degraded')], [])).toBe('degraded_performance');
+  });
+
+  it('returns partial_outage for an active major incident', () => {
+    expect(groupStatus([service('web', 'operational'), service('api', 'operational')], [incident('major', ['api'])])).toBe('partial_outage');
+  });
+
+  it('returns major_outage for an active critical incident', () => {
+    expect(groupStatus([service('api', 'operational')], [incident('critical', ['api'])])).toBe('major_outage');
+  });
+
+  it('returns degraded_performance for an active minor incident', () => {
+    expect(groupStatus([service('api', 'operational')], [incident('minor', ['api'])])).toBe('degraded_performance');
+  });
+
+  it('lets an incident override an operational service status', () => {
+    expect(groupStatus([service('api', 'operational')], [incident('major', ['api'])])).toBe('partial_outage');
+  });
+
+  it('returns unknown for an empty group', () => {
+    expect(groupStatus([], [incident('major', ['api'])])).toBe('unknown');
+  });
+
+  it('returns unknown when a member is unknown and nothing is more severe', () => {
+    expect(groupStatus([service('web', 'operational'), service('api', 'unknown')], [])).toBe('unknown');
   });
 });

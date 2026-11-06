@@ -38,7 +38,7 @@ for (const issue of issues) {
   const issueServiceIds = issue.labels.map((label) => label.name.slice(8)).filter((id) => serviceIds.includes(id) && issue.labels.some((candidate) => candidate.name === `service/${id}`));
   if (issue.labels.some((label) => label.name === 'statuspage/maintenance')) {
     const times = parseMaintenanceTimes(issue.body);
-    if (autoCloseMaintenance && issue.state === 'open' && !issue.labels.some((label) => label.name === 'state/cancelled') && times && new Date(times.endsAt).valueOf() <= Date.now()) {
+    if (autoCloseMaintenance && issue.state === 'open' && !issue.labels.some((label) => label.name === 'state/cancelled') && !issue.labels.some((label) => label.name === 'state/delayed') && times && new Date(times.endsAt).valueOf() <= Date.now()) {
       await github(`/repos/${owner}/${repository}/issues/${issue.number}`, {
         method: 'PATCH',
         body: JSON.stringify({ state: 'closed', state_reason: 'completed' }),

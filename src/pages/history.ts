@@ -1,5 +1,5 @@
-import type { HistoryIndex, Incident, Service, UptimeHistory } from '../types/status';
-import { dataUrl, formatDate, incidentCard, layout, serviceName } from './shared';
+import type { HistoryIndex, Incident, Maintenance, Service, UptimeHistory } from '../types/status';
+import { dataUrl, formatDate, incidentCard, layout, maintenanceCard, serviceName, uptimeLevel } from './shared';
 import { escapeHtml } from '../utils/status';
 import { t } from '../i18n';
 
@@ -24,14 +24,16 @@ async function loadNext(): Promise<void> {
   const months = index.months.slice(cursor, cursor + 3);
   try {
     const results = await Promise.all(months.filter((month) => !loaded.has(month.month)).map(async (month) => {
-      const data = await fetchJson<{ incidents: Incident[] }>(dataUrl(month.url.replace(/^\.\/data\//, '').replace(/^\.?\//, '')));
+      const data = await fetchJson<{ incidents: Incident[]; maintenance?: Maintenance[] }>(dataUrl(month.url.replace(/^\.\/data\//, '').replace(/^\.?\//, '')));
       loaded.add(month.month);
-      return { ...month, incidents: data.incidents };
+      return { ...month, incidents: data.incidents, maintenance: data.maintenance ?? [] };
     }));
-    results.forEach(({ month, count, incidents }) => {
+    results.forEach(({ month, incidents, maintenance }) => {
       const section = document.createElement('section');
       section.className = 'month-group';
-      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${count} ${t('incidentsInMonth')}</span></div>${incidents.map((incident) => incidentCard(incident, serviceCatalog)).join('') || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
+      const summary = `${incidents.length} ${t('incidentsInMonth')}${maintenance.length ? ` · ${maintenance.length} ${t('maintenanceInMonth')}` : ''}`;
+      const body = `${incidents.map((incident) => incidentCard(incident, serviceCatalog)).join('')}${maintenance.map((item) => maintenanceCard(item, serviceCatalog)).join('')}`;
+      section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${summary}</span></div>${body || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
       document.querySelector('#months')!.append(section);
     });
     cursor += months.length;
@@ -63,15 +65,6 @@ async function init(): Promise<void> {
     document.querySelector('#history-status')!.innerHTML = `<span class="error">${t('historyUnavailable')}</span>`;
     console.error(error);
   }
-}
-
-function uptimeLevel(uptime: number): string {
-  if (uptime >= 99.9) return 'excellent';
-  if (uptime >= 99) return 'good';
-  if (uptime >= 95) return 'fair';
-  if (uptime >= 90) return 'low';
-  if (uptime >= 75) return 'poor';
-  return 'critical';
 }
 
 async function loadUptime(): Promise<void> {

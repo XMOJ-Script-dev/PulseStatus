@@ -42,7 +42,7 @@ export function incidentCard(incident: Incident, services: Service[] = []): stri
     const service = services.find((item) => item.id === id);
     return service ? serviceName(service) : id;
   });
-  return `<a class="card incident-card" href="${base}incident.html?number=${incident.number}">
+  return `<a class="card incident-card severity-${incident.severity}" href="${base}incident.html?number=${incident.number}">
     <div class="incident-meta"><span class="pill ${incident.severity}">${escapeHtml(statusLabel(incident.severity))}</span><span class="pill">${escapeHtml(statusLabel(incident.state))}</span></div>
     <h3>${escapeHtml(incident.title)}</h3><p class="muted">${escapeHtml(incident.bodySummary)}</p>
     <small class="muted">${formatDate(incident.startedAt)} · ${names.map(escapeHtml).join(', ')}</small>
@@ -57,7 +57,16 @@ export function maintenanceCard(item: Maintenance, services: Service[] = []): st
   return `<article class="card incident-card maintenance-card"><div class="incident-meta"><span class="pill">${escapeHtml(statusLabel(item.state))}</span></div><h3>${escapeHtml(item.title)}</h3><p class="muted">${formatDate(item.startsAt)} → ${formatDate(item.endsAt)}</p><small class="muted">${names.map(escapeHtml).join(', ')}</small><a href="${escapeHtml(item.url)}" rel="noreferrer">${t('viewOnGithub')}</a></article>`;
 }
 
-export function serviceCard(service: Service, incidents: Incident[] = []): string {
+export function uptimeLevel(uptime: number): string {
+  if (uptime >= 99.9) return 'excellent';
+  if (uptime >= 99) return 'good';
+  if (uptime >= 95) return 'fair';
+  if (uptime >= 90) return 'low';
+  if (uptime >= 75) return 'poor';
+  return 'critical';
+}
+
+export function serviceCard(service: Service, incidents: Incident[] = [], maintenance: Maintenance[] = []): string {
   const name = serviceName(service);
   const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
   const activeIncidents = incidents.filter((incident) => incident.isActive && incident.serviceIds.includes(service.id));
@@ -65,8 +74,11 @@ export function serviceCard(service: Service, incidents: Incident[] = []): strin
     ? 'down'
     : activeIncidents.length
       ? 'degraded'
-      : service.status;
-  return `<a class="service-card-link" href="${base}service.html?id=${encodeURIComponent(service.id)}"><article class="card service-card"><div class="service-card-heading"><h3>${escapeHtml(name)}</h3><span class="pill ${status.replace('_', '-')}">${escapeHtml(statusLabel(status))}</span></div><p class="muted">${escapeHtml(description)}</p><small class="muted">${service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring')}</small></article></a>`;
+      : maintenance.some((item) => item.state === 'in_progress' && item.serviceIds.includes(service.id))
+        ? 'maintenance'
+        : service.status;
+  const detail = service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring');
+  return `<a class="service-row" href="${base}service.html?id=${encodeURIComponent(service.id)}" title="${escapeHtml(`${name} — ${description} · ${detail}`)}"><span class="service-row-name">${escapeHtml(name)}</span><span class="pill ${status.replace('_', '-')}">${escapeHtml(statusLabel(status))}</span></a>`;
 }
 
 export function serviceName(service: Service): string {

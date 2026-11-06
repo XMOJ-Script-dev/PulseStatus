@@ -26,6 +26,8 @@ export function issueToMaintenance(issue: { number: number; title: string; body:
   const times = parseMaintenanceTimes(issue.body);
   if (!times || !serviceIds.length) return null;
   const cancelled = issue.labels.some((label) => label.name === 'state/cancelled');
+  const delayed = issue.labels.some((label) => label.name === 'state/delayed');
+  const state = issue.state === 'closed' ? 'completed' : maintenanceState(times.startsAt, times.endsAt, now);
   return {
     id: `maintenance-${issue.number}`,
     title: issue.title,
@@ -34,6 +36,6 @@ export function issueToMaintenance(issue: { number: number; title: string; body:
     timezone: times.timezone,
     serviceIds,
     url: issue.html_url,
-    state: cancelled ? 'cancelled' : issue.state === 'closed' ? 'completed' : maintenanceState(times.startsAt, times.endsAt, now),
+    state: cancelled ? 'cancelled' : delayed && issue.state === 'open' && state === 'completed' ? 'in_progress' : state,
   };
 }

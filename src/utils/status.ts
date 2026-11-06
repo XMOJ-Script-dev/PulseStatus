@@ -1,6 +1,36 @@
-import type { DailyUptime, Incident, OverallStatus, Service, Severity, Summary, TimelineEntry } from '../types/status';
+import type { DailyUptime, GroupStatus, Incident, Maintenance, OverallStatus, Service, Severity, Summary, TimelineEntry } from '../types/status';
 
 const severityRank: Record<Severity, number> = { critical: 0, major: 1, minor: 2 };
+
+export const groupStatusRank: Record<GroupStatus, number> = {
+  major_outage: 0,
+  all_down: 1,
+  partial_outage: 2,
+  degraded_performance: 3,
+  unknown: 4,
+  operational: 5,
+};
+
+export function groupStatus(members: Service[], activeIncidents: Incident[]): GroupStatus {
+  if (members.length === 0) return 'unknown';
+  const memberIds = new Set(members.map((member) => member.id));
+  const active = activeIncidents.filter((incident) => incident.isActive && incident.serviceIds.some((id) => memberIds.has(id)));
+  const effectiveStatus = (member: Service): Service['status'] => {
+    const severities = active.filter((incident) => incident.serviceIds.includes(member.id)).map((incident) => incident.severity);
+    if (severities.some((severity) => severity !== 'minor')) return 'down';
+    if (severities.includes('minor')) return 'degraded';
+    return member.status;
+  };
+  if (active.some((incident) => incident.severity === 'critical')) return 'major_outage';
+  if (active.some((incident) => incident.severity === 'major')) return 'partial_outage';
+  if (active.some((incident) => incident.severity === 'minor')) return 'degraded_performance';
+  const statuses = members.map(effectiveStatus);
+  if (statuses.every((status) => status === 'down')) return 'all_down';
+  if (statuses.includes('down')) return 'partial_outage';
+  if (statuses.includes('degraded')) return 'degraded_performance';
+  if (statuses.includes('unknown') || statuses.includes('manually_reported')) return 'unknown';
+  return 'operational';
+}
 
 export function sortIncidents(incidents: Incident[]): Incident[] {
   return [...incidents].sort((a, b) =>
@@ -42,6 +72,15 @@ export function groupHistoryByMonth(incidents: Incident[]): Map<string, Incident
   return new Map([...groups.entries()].sort(([a], [b]) => b.localeCompare(a)));
 }
 
+export function groupMaintenanceByMonth(maintenance: Maintenance[]): Map<string, Maintenance[]> {
+  const groups = new Map<string, Maintenance[]>();
+  maintenance.filter((item) => item.state === 'completed' || item.state === 'cancelled').forEach((item) => {
+    const month = item.startsAt.slice(0, 7);
+    groups.set(month, [...(groups.get(month) ?? []), item]);
+  });
+  return new Map([...groups.entries()].sort(([a], [b]) => b.localeCompare(a)));
+}
+
 export function overallStatus(incidents: Incident[], services: Service[]): OverallStatus {
   if (incidents.some((i) => i.isActive && i.severity === 'critical')) return 'major_outage';
   if (incidents.some((i) => i.isActive && i.severity === 'major')) return 'partial_outage';
@@ -74,10 +113,20 @@ export function buildDailyUptime(
   generatedAt: string,
   dayCount = 90,
   currentServices: Array<Pick<Service, 'id' | 'status' | 'lastCheckedAt'>> = [],
+  maintenance: Maintenance[] = [],
 ): DailyUptime[] {
   const snapshot = new Date(generatedAt);
   if (Number.isNaN(snapshot.valueOf())) throw new Error(`Invalid uptime snapshot time: ${generatedAt}`);
   if (!Number.isInteger(dayCount) || dayCount < 1) throw new Error(`Invalid uptime day count: ${dayCount}`);
+
+  const maintenanceByService = new Map<string, Array<[number, number]>>();
+  for (const serviceId of serviceIds) {
+    const windows = maintenance
+      .filter((item) => item.state !== 'cancelled' && item.serviceIds.includes(serviceId))
+      .map((item) => [new Date(item.startsAt).valueOf(), new Date(item.endsAt).valueOf()] as [number, number])
+      .filter(([start, end]) => Number.isFinite(start) && Number.isFinite(end) && end > start);
+    maintenanceByService.set(serviceId, mergeIntervals(windows));
+  }
 
   const snapshotDayStart = Date.UTC(snapshot.getUTCFullYear(), snapshot.getUTCMonth(), snapshot.getUTCDate());
   const endOfSnapshotDay = snapshot.valueOf() === snapshotDayStart ? snapshotDayStart : snapshotDayStart + 86_400_000;
@@ -88,11 +137,37 @@ export function buildDailyUptime(
     const date = new Date(start).toISOString().slice(0, 10);
     const services = Object.fromEntries(serviceIds.map((serviceId) => [
       serviceId,
-      uptimeForDay(incidents, serviceId, start, end, currentServices),
+      uptimeForDay(incidents, serviceId, start, end, currentServices, maintenanceByService.get(serviceId) ?? []),
     ]));
     days.push({ date, services });
   }
   return days;
+}
+
+function mergeIntervals(intervals: Array<readonly [number, number]>): Array<[number, number]> {
+  const merged: Array<[number, number]> = [];
+  for (const [start, end] of [...intervals].sort(([a], [b]) => a - b)) {
+    const last = merged.at(-1);
+    if (last && start <= last[1]) last[1] = Math.max(last[1], end);
+    else merged.push([start, end]);
+  }
+  return merged;
+}
+
+function subtractIntervals(intervals: Array<[number, number]>, exclusions: Array<[number, number]>): number {
+  let total = 0;
+  for (const [start, end] of intervals) {
+    let cursor = start;
+    for (const [exclusionStart, exclusionEnd] of exclusions) {
+      if (exclusionEnd <= cursor) continue;
+      if (exclusionStart >= end) break;
+      if (exclusionStart > cursor) total += exclusionStart - cursor;
+      cursor = Math.max(cursor, exclusionEnd);
+      if (cursor >= end) break;
+    }
+    if (cursor < end) total += end - cursor;
+  }
+  return total;
 }
 
 function uptimeForDay(
@@ -101,6 +176,7 @@ function uptimeForDay(
   dayStart: number,
   dayEnd: number,
   currentServices: Array<Pick<Service, 'id' | 'status' | 'lastCheckedAt'>>,
+  maintenanceIntervals: Array<[number, number]>,
 ): number {
   const intervals = incidents
     .filter((incident) => incident.serviceIds.includes(serviceId))
@@ -118,13 +194,7 @@ function uptimeForDay(
   }
   intervals.sort(([leftStart], [rightStart]) => leftStart - rightStart);
 
-  let downtime = 0;
-  let intervalEnd = -Infinity;
-  for (const [start, end] of intervals) {
-    if (end <= intervalEnd) continue;
-    downtime += end - Math.max(start, intervalEnd);
-    intervalEnd = end;
-  }
+  const downtime = subtractIntervals(mergeIntervals(intervals), maintenanceIntervals);
   return Math.max(0, Math.min(100, Number((((dayEnd - dayStart - downtime) / (dayEnd - dayStart)) * 100).toFixed(3))));
 }
 

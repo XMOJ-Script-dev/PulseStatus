@@ -1,6 +1,6 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { parse } from 'yaml';
-import { buildSummary, groupHistoryByMonth } from '../src/utils/status';
+import { buildSummary, groupHistoryByMonth, groupMaintenanceByMonth } from '../src/utils/status';
 import type { Incident, Service, SiteConfig, UptimeHistory } from '../src/types/status';
 import type { Maintenance } from '../src/types/status';
 import { buildDailyUptime } from '../src/utils/status';
@@ -31,17 +31,20 @@ await writeFile('public/data/summary.json', JSON.stringify(summary, null, 2));
 await writeFile('public/data/summary.js', `window.PulseStatusSummary=${JSON.stringify(summary)};`);
 await writeFile('public/data/site.js', `window.PulseStatusConfig=${JSON.stringify(site)};`);
 const groups = groupHistoryByMonth(incidents);
+const maintenanceGroups = groupMaintenanceByMonth(maintenanceData.maintenance);
 const months = [];
 await mkdir('public/data/history', { recursive: true });
-for (const [month, monthIncidents] of groups) {
-  await writeFile(`public/data/history/${month}.json`, JSON.stringify({ schemaVersion: 1, generatedAt, incidents: monthIncidents }, null, 2));
-  months.push({ month, count: monthIncidents.length, url: `./history/${month}.json` });
+for (const month of [...new Set([...groups.keys(), ...maintenanceGroups.keys()])].sort((a, b) => b.localeCompare(a))) {
+  const monthIncidents = groups.get(month) ?? [];
+  const monthMaintenance = maintenanceGroups.get(month) ?? [];
+  await writeFile(`public/data/history/${month}.json`, JSON.stringify({ schemaVersion: 1, generatedAt, incidents: monthIncidents, maintenance: monthMaintenance }, null, 2));
+  months.push({ month, count: monthIncidents.length + monthMaintenance.length, url: `./history/${month}.json` });
 }
 await writeFile('public/data/history-index.json', JSON.stringify({ schemaVersion: 1, generatedAt, months }, null, 2));
 const uptime: UptimeHistory = {
   schemaVersion: 1,
   generatedAt,
-  days: buildDailyUptime(incidents, servicesData.services.map((service) => service.id), generatedAt, 90, servicesData.services),
+  days: buildDailyUptime(incidents, servicesData.services.map((service) => service.id), generatedAt, 90, servicesData.services, maintenanceData.maintenance),
 };
 await writeFile('public/data/uptime.json', JSON.stringify(uptime, null, 2));
 console.log(`Built summary, ${months.length} history month files, and ${uptime.days.length} uptime days.`);

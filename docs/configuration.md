@@ -98,7 +98,7 @@ issues:
 
 `publishLabel` and `maintenanceLabel` are the labels recognized by the synchronizer. `trustedMaintainers` and `trustedAssociations` control which comments can become public operational updates. `autoIncidentSeverity` must be `minor`, `major`, or `critical`.
 
-When `autoCloseMaintenance` is `true`, the workflow closes an open, non-cancelled maintenance Issue after its `Ends at` time. It uses GitHub's `completed` state reason. This applies only to maintenance Issues and does not close manually managed Incidents.
+When `autoCloseMaintenance` is `true`, the workflow closes an open, non-cancelled maintenance Issue after its `Ends at` time. It uses GitHub's `completed` state reason. This applies only to maintenance Issues and does not close manually managed Incidents. Add the `state/delayed` label to a maintenance Issue to keep it open past its scheduled end; a delayed open Issue is exported as in progress until it is closed or the label is removed.
 
 The workflow needs `contents: write` and `issues: write` permissions to persist monitoring state and update Issues.
 
@@ -191,7 +191,9 @@ Ends at: 2026-11-01T03:30:00+08:00
 Timezone: Asia/Singapore
 ```
 
-Invalid windows are skipped with a warning. A closed maintenance Issue is exported as completed; a `state/cancelled` label is exported as cancelled.
+Invalid windows are skipped with a warning. A closed maintenance Issue is exported as completed; a `state/cancelled` label is exported as cancelled; an open Issue past its end time with a `state/delayed` label is exported as in progress instead of completed.
+
+The overview page's maintenance section lists only planned maintenance (`scheduled` and `in_progress`). Completed and cancelled maintenance is archived into the incident history instead: `build-public-data.ts` groups it by UTC start month into `history/YYYY-MM.json`, and the history page renders it alongside resolved incidents with a per-month count.
 
 ## Service groups
 
@@ -215,7 +217,9 @@ For example, a service can place its group below another group:
 }
 ```
 
-`nameI18n` uses the browser's exact locale first, then its base language, and finally `name` or the group key. The generated service directory uses native accessible disclosure controls. Visitors can still expand or collapse groups while browsing; `defaultExpanded` controls the initial state.
+`nameI18n` uses the browser's exact locale first, then its base language, and finally `name` or the group key. The service directory renders Cloudflare-style: groups are always expanded full-width rows (group name on the left, aggregated status pill on the right), with member services listed as hairline-separated rows below — there is nothing to expand or collapse, so `defaultExpanded` is no longer used by the rendering (it is still accepted by config validation for backward compatibility).
+
+Each group header also displays an aggregated status pill, and groups are ordered by severity (most severe first; ties sort by name). The pill is computed in the browser: an active `severity/critical` Incident in the group shows Major outage, `severity/major` shows Partial outage, and `severity/minor` shows Degraded performance. When no Incident is active, member probe states decide: all members down shows All systems down, some members down shows Partial outage, a degraded member shows Degraded performance, an unknown or manually monitored member shows Unknown/Limited monitoring, and otherwise Operational.
 
 ## Automatic Incident publication
 
@@ -255,7 +259,9 @@ If repository policy disallows workflow pushes, use an external durable state st
 
 ## Uptime calculation
 
-`buildDailyUptime()` calculates each UTC day independently. It finds incidents mentioning a service, clips each interval to the day, sorts and merges overlapping intervals, and subtracts the union of downtime from the elapsed day. Resolved incidents use `closedAt` (falling back to `updatedAt`); active incidents extend to the generated snapshot timestamp.
+`buildDailyUptime()` calculates each UTC day independently. It finds incidents mentioning a service, clips each interval to the day, sorts and merges overlapping intervals, and subtracts the union of downtime from the elapsed day. Resolved incidents use `closedAt` (falling back to `updatedAt`); active incidents extend to the generated snapshot timestamp. Planned maintenance windows (non-cancelled maintenance overlapping the service) are clipped to the day and excluded from downtime, so a service under maintenance does not lose uptime. Cancelled maintenance and maintenance for other services have no effect.
+
+While a maintenance is `in_progress`, the affected services are displayed with an “Under maintenance” pill on the overview and service detail pages; active incidents still take display precedence. The maintenance state itself is not changed in `services.json`, so group aggregation and the overall summary are unaffected.
 
 The output is rounded to three decimal places and capped between 0 and 100. It is intentionally incident-derived and should not be described as synthetic monitoring coverage.
 

@@ -61,9 +61,9 @@ sequenceDiagram
 4. **Synchronize Issues.** `sync-issues.ts` downloads paginated Issues, rejects invalid labels, keeps only trusted comments, and writes public incident/maintenance snapshots.
 5. **Probe services.** `check-services.ts` checks only scheduled or hybrid services with a `checkUrl`, and only when the service-specific interval has elapsed. Manual services are skipped unconditionally.
 6. **Publish automated incidents.** `auto-publish-incidents.ts` consumes the current probe result and persisted counters. It creates one marked Issue after the configured failure threshold and closes it after the configured recovery threshold.
-7. **Close completed maintenance.** `sync-issues.ts` closes an open, non-cancelled maintenance Issue after its end time when `issues.autoCloseMaintenance` is enabled.
+7. **Close completed maintenance.** `sync-issues.ts` closes an open, non-cancelled maintenance Issue after its end time when `issues.autoCloseMaintenance` is enabled. Issues carrying the `state/delayed` label are exempt: they stay open and are exported as in progress past their scheduled end.
 8. **Persist monitoring state.** The workflow commits the counter file, service snapshot, and append-only probe history with `[skip ci]`, so state survives the next scheduled run without recursively triggering the workflow.
-9. **Build public data.** `build-public-data.ts` derives summary status, incident history, incident-derived uptime, service-group configuration, and site branding data.
+9. **Build public data.** `build-public-data.ts` derives summary status, incident history, incident-derived uptime (with planned maintenance windows excluded from downtime), service-group configuration, and site branding data.
 10. **Configure Pages and build.** `configure-pages` supplies the actual base path. Project Pages use `/PulseStatus/`; a configured custom domain uses `/`.
 11. **Deploy.** The Pages artifact is uploaded and deployed. GitHub Pages serves the result without a server process.
 
@@ -147,13 +147,13 @@ These files describe the current run and can be regenerated:
 | `public/data/probe-history.json` | Append one record per real probe | Immutable scheduled/hybrid probe results. |
 | `public/data/monitor-state.json` | Update counters and last-probe metadata | Operational cursor used to determine due probes and Incident thresholds. |
 | `public/data/uptime.json` | Regenerated snapshot | Incident-derived daily uptime for the configured history window. |
-| `public/data/history-index.json` | Regenerated index | Monthly incident archive index. |
-| `public/data/history/YYYY-MM.json` | Generated monthly files | Resolved incidents grouped by UTC start month. |
+| `public/data/history-index.json` | Regenerated index | Monthly archive index of resolved incidents and completed or cancelled maintenance. |
+| `public/data/history/YYYY-MM.json` | Generated monthly files | Resolved incidents plus completed or cancelled maintenance, grouped by UTC start month. |
 
 Probe history and incident-derived uptime are deliberately different:
 
 - **Probe history** answers: “What did an actual scheduled request observe?”
-- **Incident uptime** answers: “How much published Incident downtime overlapped each UTC day?”
+- **Incident uptime** answers: “How much published Incident downtime overlapped each UTC day?” Planned maintenance windows are excluded from that downtime.
 
 A manual service can have no probe records and still have incident-derived uptime data. A day with 100% incident uptime means no published downtime, not proof that every minute was probed.
 
@@ -172,12 +172,12 @@ flowchart TD
 
 | URL | Entry file | Main data |
 | --- | --- | --- |
-| `/` | `index.html` → `src/pages/overview.ts` | summary, active incidents, services |
+| `/` | `index.html` → `src/pages/overview.ts` | summary, active incidents, maintenance, services, uptime |
 | `/history.html` | `history.html` → `src/pages/history.ts` | uptime, services, monthly history |
 | `/incident.html?number=123` | `incident.html` → `src/pages/incident.ts` | all incidents |
 | `/service.html?id=web` | `service.html` → `src/pages/service.ts` | service, uptime, probe history, incidents, maintenance |
 
-`src/pages/shared.ts` owns the common header, administrator-selected theme, footer, date formatting, status cards, service links, and configured favicon. `escapeHtml` is used for public Issue and configuration text before it reaches the DOM.
+`src/pages/shared.ts` owns the common header, administrator-selected theme, footer, date formatting, status cards, service links, and configured favicon. `escapeHtml` is used for public Issue and configuration text before it reaches the DOM. Each service group’s aggregate status pill is derived in the browser from `services.json` member states and `incidents-active.json` severities, so group status requires no build-script changes.
 
 ## Repository file map
 
@@ -219,13 +219,13 @@ The following list covers every project-owned source, configuration, page, data,
 | --- | --- |
 | `src/types/status.ts` | Shared contracts for incidents, services, summaries, maintenance, site configuration, monitor state, probe results, and uptime. |
 | `src/i18n.ts` | English/Chinese strings, locale selection, and status label translation. |
-| `src/utils/status.ts` | Incident sorting, monthly grouping, overall status derivation, summary construction, daily uptime calculation, and HTML escaping. |
+| `src/utils/status.ts` | Incident sorting, monthly grouping, overall status derivation, group status aggregation, summary construction, daily uptime calculation, and HTML escaping. |
 | `src/data/issues.ts` | GitHub Issue label validation, active-state calculation, safe summaries, trusted comment filtering, timeline construction, and Incident conversion. |
 | `src/data/maintenance.ts` | Maintenance timestamp parsing, time-window state calculation, and Issue conversion. |
 | `src/data/monitor.ts` | Pure monitoring threshold transition logic used by tests and monitoring behavior. |
 | `src/pages/shared.ts` | Shared layout, configured branding, navigation, styles, date formatting, service cards, incident cards, and status classes. |
-| `src/pages/overview.ts` | Loads current summary, incidents, and services; renders the status banner and service directory. |
-| `src/pages/history.ts` | Loads uptime and lazy-loads monthly incident archives. |
+| `src/pages/overview.ts` | Loads current summary, incidents, services, maintenance, and uptime; renders the status banner, a 90-day uptime strip, and the Cloudflare-style service directory (full-width group rows with aggregate status pills, member services as hairline-separated rows) ordered by severity. |
+| `src/pages/history.ts` | Loads uptime and lazy-loads monthly archives of resolved incidents and completed maintenance. |
 | `src/pages/incident.ts` | Finds one published incident by query-string number and renders its timeline. |
 | `src/pages/service.ts` | Finds one service by ID and renders uptime, probe history, related incidents, and maintenance. |
 | `src/styles/main.css` | Built-in responsive layout, component styles, semantic status colors, themes, and accessibility states. |

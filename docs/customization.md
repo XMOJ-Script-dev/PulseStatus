@@ -29,7 +29,7 @@ To set the same company palette for every style:
 }
 ```
 
-Available core variables include `--surface`, `--border`, `--muted`, `--brand`, `--brand-deep`, `--success`, `--warning`, `--danger`, and `--ink-soft`. Existing selectors cover `.site-header`, `.site-footer`, `.hero`, `.service-card`, `.uptime-card`, `.uptime-day`, `.incident-card`, and `.pill`.
+Available core variables include `--surface`, `--border`, `--muted`, `--brand`, `--brand-deep`, `--success`, `--warning`, `--danger`, and `--ink-soft`. Existing selectors cover `.site-header`, `.site-footer`, `.hero`, `.service-row`, `.service-group-header`, `.directory-uptime`, `.uptime-card`, `.uptime-day`, `.incident-card`, and `.pill`. The service directory renders Cloudflare-style: group headers show their aggregated status as a `.pill` next to the group title, member services are hairline-separated `.service-row` links, and a `.directory-uptime` strip above the directory summarizes 90-day uptime. Groups are ordered by severity (most severe first) rather than by configuration order, so use CSS to restyle the pill rather than to reorder groups.
 
 ## Theme design tokens
 

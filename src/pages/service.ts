@@ -1,5 +1,5 @@
 import type { Incident, Maintenance, ProbeHistory, Service, UptimeHistory } from '../types/status';
-import { dataUrl, formatDate, incidentCard, layout, serviceName } from './shared';
+import { dataUrl, formatDate, incidentCard, layout, serviceName, uptimeLevel } from './shared';
 import { escapeHtml } from '../utils/status';
 import { language, statusLabel, t } from '../i18n';
 
@@ -11,15 +11,6 @@ async function fetchJson<T>(path: string): Promise<T> {
   const response = await fetch(dataUrl(path));
   if (!response.ok) throw new Error(`Could not load ${path} (${response.status})`);
   return response.json() as Promise<T>;
-}
-
-function uptimeLevel(uptime: number): string {
-  if (uptime >= 99.9) return 'excellent';
-  if (uptime >= 99) return 'good';
-  if (uptime >= 95) return 'fair';
-  if (uptime >= 90) return 'low';
-  if (uptime >= 75) return 'poor';
-  return 'critical';
 }
 
 async function init(): Promise<void> {
@@ -48,12 +39,14 @@ async function init(): Promise<void> {
     }).join('');
     const incidents = incidentsData.incidents.filter((incident) => incident.serviceIds.includes(service.id)).sort((a, b) => b.updatedAt.localeCompare(a.updatedAt));
     const activeIncidents = incidents.filter((incident) => incident.isActive);
+    const maintenance = maintenanceData.maintenance.filter((item) => item.serviceIds.includes(service.id)).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     const incidentStatus = activeIncidents.some((incident) => incident.severity !== 'minor')
       ? 'down'
       : activeIncidents.length
         ? 'degraded'
-        : service.status;
-    const maintenance = maintenanceData.maintenance.filter((item) => item.serviceIds.includes(service.id)).sort((a, b) => b.startsAt.localeCompare(a.startsAt));
+        : maintenance.some((item) => item.state === 'in_progress')
+          ? 'maintenance'
+          : service.status;
     const maintenanceCards = maintenance.map((item) => `<article class="card incident-card"><div class="incident-meta"><span class="pill">${escapeHtml(statusLabel(item.state))}</span></div><h3>${escapeHtml(item.title)}</h3><p class="muted">${formatDate(item.startsAt)} → ${formatDate(item.endsAt)}</p><a href="${escapeHtml(item.url)}" rel="noreferrer">${t('viewOnGithub')}</a></article>`).join('');
     const probes = (probeHistory.services[service.id] ?? []).slice(-90);
     const probeCells = probes.map((probe) => {

@@ -1,0 +1,4 @@
+# GitHub fine-grained personal access token with "Actions: Read and write" on the
+# repository that hosts the PulseStatus workflow (e.g. XMOJ-Script-dev/PulseStatus).
+# The Deploy to Cloudflare button prompts for this value as a secret.
+GITHUB_TOKEN=github_pat_xxx

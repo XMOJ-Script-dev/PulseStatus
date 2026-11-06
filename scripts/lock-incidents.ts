@@ -1,10 +1,13 @@
 import { readFile } from 'node:fs/promises';
+import { parse } from 'yaml';
 import type { Incident } from '../src/types/status';
 
 const token = process.env.GITHUB_TOKEN;
 const repository = process.env.GITHUB_REPOSITORY;
 const reason = process.env.PULSE_LOCK_REASON;
-if (process.env.PULSE_LOCK_INCIDENTS !== 'true') {
+const config = parse(await readFile('config/statuspage.yml', 'utf8')) as { issues?: { lockOfficialIncidents?: boolean } };
+const lockEnabled = process.env.PULSE_LOCK_INCIDENTS ? process.env.PULSE_LOCK_INCIDENTS === 'true' : config.issues?.lockOfficialIncidents === true;
+if (!lockEnabled) {
   console.log('Issue locking disabled by configuration.');
   process.exit(0);
 }

@@ -22,6 +22,7 @@ button { font: inherit; }
 .site-header { display: flex; justify-content: space-between; align-items: center; gap: 24px; padding: 22px 0; border-bottom: 1px solid var(--border); margin-bottom: 18px; }
 .brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; text-decoration: none; font-size: 1.15rem; font-weight: 800; letter-spacing: -.03em; }
 .brand-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; color: #fff; background: linear-gradient(135deg, var(--brand), var(--brand-deep)); font-size: .9rem; }
+.brand-logo { display: block; width: auto; height: 30px; object-fit: contain; }
 .header-controls { display: flex; align-items: center; gap: 18px; }
 nav { display: flex; flex-wrap: wrap; gap: 18px; }
 nav a { color: var(--muted); text-decoration: none; font-weight: 600; }
@@ -70,6 +71,29 @@ p { line-height: 1.55; }
 .service-row:hover, .service-row:focus-visible { color: inherit; }
 .service-row-name { font-weight: 600; }
 .service-row .pill { flex: 0 0 auto; white-space: nowrap; }
+.service-directory:has(.system-board) { border-top: 0; border-bottom: 0; }
+.system-board { border: 1px solid var(--border); border-radius: 12px; background: var(--surface); overflow: hidden; }
+.system-board > :first-child { border-top: 0; }
+.system-board .directory-uptime { padding: 16px; }
+.board-group-header { display: flex; align-items: center; gap: 10px; padding: 15px 16px 7px; border-top: 1px solid var(--border); color: var(--ink-soft); font-weight: 800; }
+.board-group[data-depth="1"] .board-group-header, .board-group[data-depth="1"] .board-row { padding-left: 32px; }
+.board-group[data-depth="2"] .board-group-header, .board-group[data-depth="2"] .board-row { padding-left: 48px; }
+.board-row { display: flex; align-items: center; gap: 10px; padding: 11px 16px; border-top: 1px solid var(--border); color: inherit; text-decoration: none; }
+a.board-row:hover, a.board-row:focus-visible { color: inherit; background: rgb(127 127 127 / 6%); }
+.board-row-name { font-weight: 600; }
+.board-uptime { margin-left: auto; font-size: .84rem; }
+.board-status { font-weight: 700; font-size: .9rem; }
+.board-row .board-status:last-child { margin-left: auto; }
+.board-dot { width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; background: var(--muted); }
+.board-dot.operational { background: #22c55e; }
+.board-dot.degraded, .board-dot.degraded-performance, .board-dot.partial-outage { background: #f59e0b; }
+.board-dot.down, .board-dot.major-outage, .board-dot.all-down { background: #ef4444; }
+.board-dot.maintenance { background: #3b82f6; }
+.board-status.operational { color: #16a34a; }
+.board-status.degraded, .board-status.degraded-performance, .board-status.partial-outage { color: #d97706; }
+.board-status.down, .board-status.major-outage, .board-status.all-down { color: #dc2626; }
+.board-status.maintenance { color: #2563eb; }
+.board-status.unknown { color: var(--muted); }
 .incident-card { display: block; color: inherit; text-decoration: none; }
 .incident-card.severity-minor { border-left: 3px solid #f59e0b; }
 .incident-card.severity-major { border-left: 3px solid #ef4444; }
@@ -184,5 +208,13 @@ html[data-style="mono"] .uptime-day[data-level="critical"] { background: #171717
   .pill.degraded-performance, .pill.partial-outage { background: #51371c; color: #fed7aa; }
   .pill.unknown { background: var(--border); color: var(--muted); }
   .pill.maintenance { background: #1e3a8a; color: #bfdbfe; }
+  .board-dot.operational { background: #4ade80; }
+  .board-dot.degraded, .board-dot.degraded-performance, .board-dot.partial-outage { background: #fbbf24; }
+  .board-dot.down, .board-dot.major-outage, .board-dot.all-down { background: #f87171; }
+  .board-dot.maintenance { background: #60a5fa; }
+  .board-status.operational { color: #4ade80; }
+  .board-status.degraded, .board-status.degraded-performance, .board-status.partial-outage { color: #fbbf24; }
+  .board-status.down, .board-status.major-outage, .board-status.all-down { color: #f87171; }
+  .board-status.maintenance { color: #60a5fa; }
   .error { background: #3b1e27; }
 }

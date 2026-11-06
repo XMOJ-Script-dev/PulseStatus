@@ -1,10 +1,14 @@
 # Branding and CSS customization
 
+**Language:** English · [简体中文](zh/customization.md)
+
 This guide covers visual customization without changing application logic. Source changes belong in `config/statuspage.yml`, `public/`, or `src/styles/custom.css`; generated `dist/` assets are disposable.
 
 ## CSS entry point
 
 Edit [`src/styles/custom.css`](../src/styles/custom.css). It is imported after `main.css`, so it is the supported place for repository-specific changes. Do not edit generated files under `dist/` or generated data under `public/data/`.
+
+For simple recoloring you often do not need CSS at all: `site.colors` in `config/statuspage.yml` overrides the core palette (`brand`, `brandDeep`, `success`, `warning`, `danger`) at runtime as CSS variables and composes with every built-in theme. Reach for `custom.css` when you need layout, typography, or selector-level changes beyond those five variables.
 
 The administrator-selected `site.theme` sets `data-style` on the root element to `modern`, `compact`, `vivid`, or `mono`. Target one built-in style without affecting the others:
 
@@ -29,7 +33,7 @@ To set the same company palette for every style:
 }
 ```
 
-Available core variables include `--surface`, `--border`, `--muted`, `--brand`, `--brand-deep`, `--success`, `--warning`, `--danger`, and `--ink-soft`. Existing selectors cover `.site-header`, `.site-footer`, `.hero`, `.service-row`, `.service-group-header`, `.directory-uptime`, `.uptime-card`, `.uptime-day`, `.incident-card`, and `.pill`. The service directory renders Cloudflare-style: group headers show their aggregated status as a `.pill` next to the group title, member services are hairline-separated `.service-row` links, and a `.directory-uptime` strip above the directory summarizes 90-day uptime. Groups are ordered by severity (most severe first) rather than by configuration order, so use CSS to restyle the pill rather than to reorder groups.
+Available core variables include `--surface`, `--border`, `--muted`, `--brand`, `--brand-deep`, `--success`, `--warning`, `--danger`, and `--ink-soft`. Existing selectors cover `.site-header`, `.site-footer`, `.hero`, `.service-row`, `.service-group-header`, `.system-board`, `.board-row`, `.board-dot`, `.directory-uptime`, `.uptime-card`, `.uptime-day`, `.incident-card`, and `.pill`. With the default `standard` layout, the service directory renders Cloudflare-style: group headers show their aggregated status as a `.pill` next to the group title, member services are hairline-separated `.service-row` links, and a `.directory-uptime` strip above the directory summarizes 90-day uptime. With `site.layout: fused`, the directory renders as a rounded `.system-board`: `.board-group-header` sections and `.board-row` links use colored `.board-dot` indicators and text `.board-status` colors instead of pills. Groups are ordered by severity (most severe first) rather than by configuration order, so use CSS to restyle the pill rather than to reorder groups.
 
 ## Theme design tokens
 

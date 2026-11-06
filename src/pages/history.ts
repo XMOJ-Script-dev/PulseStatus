@@ -9,6 +9,7 @@ app.innerHTML = layout(`${t('uptimeHistory')} · PulseStatus`, `<section class="
 let index: HistoryIndex;
 let serviceCatalog: Service[] = [];
 let cursor = 0;
+const pageSize = Math.max(1, window.PulseStatusConfig?.history?.monthsPerLoad ?? 3);
 const loaded = new Set<string>();
 
 async function fetchJson<T>(url: string): Promise<T> {
@@ -21,7 +22,7 @@ async function loadNext(): Promise<void> {
   const button = document.querySelector<HTMLButtonElement>('#load-more')!;
   button.disabled = true;
   document.querySelector('#history-status')!.textContent = t('loadingOlder');
-  const months = index.months.slice(cursor, cursor + 3);
+  const months = index.months.slice(cursor, cursor + pageSize);
   try {
     const results = await Promise.all(months.filter((month) => !loaded.has(month.month)).map(async (month) => {
       const data = await fetchJson<{ incidents: Incident[]; maintenance?: Maintenance[] }>(dataUrl(month.url.replace(/^\.\/data\//, '').replace(/^\.?\//, '')));
@@ -36,8 +37,7 @@ async function loadNext(): Promise<void> {
       section.innerHTML = `<div class="section-heading"><h2>${month}</h2><span class="muted">${summary}</span></div>${body || `<p class="card empty">${t('noIncidentsInMonth')}</p>`}`;
       document.querySelector('#months')!.append(section);
     });
-    cursor += months.length;
-    document.querySelector('#history-status')!.textContent = t('historyLoaded');
+    cursor += months.length;    document.querySelector('#history-status')!.textContent = t('historyLoaded');
   } catch (error) {
     document.querySelector('#history-status')!.innerHTML = `<span class="error">${t('historyLoadFailed')}</span>`;
     console.error(error);
@@ -59,7 +59,8 @@ async function init(): Promise<void> {
       document.querySelector('#months')!.innerHTML = `<p class="card empty">${t('noHistory')}</p>`;
       return;
     }
-    await loadNext();
+    const initialBatches = Math.max(1, Math.ceil((window.PulseStatusConfig?.history?.initialMonths ?? 3) / pageSize));
+    for (let batch = 0; batch < initialBatches; batch += 1) await loadNext();
     document.querySelector<HTMLButtonElement>('#load-more')!.addEventListener('click', () => void loadNext());
   } catch (error) {
     document.querySelector('#history-status')!.innerHTML = `<span class="error">${t('historyUnavailable')}</span>`;

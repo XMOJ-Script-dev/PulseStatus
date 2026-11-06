@@ -12,6 +12,8 @@ const defaultSite: SiteConfig = {
   timezone: 'UTC',
   favicon: 'favicon.png',
   companyName: 'PulseStatus',
+  showGithub: true,
+  githubUrl: 'https://github.com/XMOJ-Script-dev/PulseStatus',
   theme: 'modern',
 };
 const site = window.PulseStatusConfig ?? defaultSite;
@@ -20,13 +22,21 @@ export function layout(title: string, content: string): string {
   document.title = title.replace('PulseStatus', site.name);
   document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
   document.documentElement.dataset.style = site.theme;
+  for (const [key, value] of Object.entries(site.colors ?? {})) {
+    if (value) document.documentElement.style.setProperty(`--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`, value);
+  }
   const favicon = document.querySelector<HTMLLinkElement>('link[rel="icon"]');
   if (favicon) favicon.href = `${base}${site.favicon.replace(/^\.?\//, '')}`;
   const company = site.companyUrl ? `<a href="${escapeHtml(site.companyUrl)}" rel="noreferrer">${escapeHtml(site.companyName)}</a>` : escapeHtml(site.companyName);
   const footerLinks = (site.footerLinks ?? []).map((link) => `<a href="${escapeHtml(link.url)}" rel="noreferrer">${escapeHtml(link.label)}</a>`).join('');
+  const githubNav = site.showGithub === false || !site.githubUrl ? '' : `<a href="${escapeHtml(site.githubUrl)}" rel="noreferrer">${escapeHtml(site.githubLabel ?? t('github'))}</a>`;
+  const navLinks = (site.navLinks ?? []).map((link) => `<a href="${escapeHtml(link.url)}" rel="noreferrer">${escapeHtml(link.label)}</a>`).join('');
+  const brandMark = site.logo
+    ? `<img class="brand-logo" src="${base}${site.logo.replace(/^\.?\//, '')}" alt="${escapeHtml(site.name)}">`
+    : `<span class="brand-mark">P</span>`;
   return `<div class="site-shell">
-    <header class="site-header"><a class="brand" href="${base}"><span class="brand-mark">P</span><span>${escapeHtml(site.name)}</span></a>
-      <div class="header-controls"><nav aria-label="Primary navigation"><a href="${base}">${t('overview')}</a><a href="${base}history.html">${t('history')}</a><a href="https://github.com/XMOJ-Script-dev/PulseStatus">${t('github')}</a></nav></div>
+    <header class="site-header"><a class="brand" href="${base}">${brandMark}<span>${escapeHtml(site.name)}</span></a>
+      <div class="header-controls"><nav aria-label="Primary navigation"><a href="${base}">${t('overview')}</a><a href="${base}history.html">${t('history')}</a>${githubNav}${navLinks}</nav></div>
     </header>${site.headerText ? `<p class="site-header-note muted">${escapeHtml(site.headerText)}</p>` : ''}<main>${content}</main><footer class="site-footer"><p>${site.footerText ? `${escapeHtml(site.footerText)} ` : ''}${company}</p>${footerLinks ? `<div class="footer-links">${footerLinks}</div>` : ''}</footer>
   </div>`;
 }
@@ -66,17 +76,21 @@ export function uptimeLevel(uptime: number): string {
   return 'critical';
 }
 
-export function serviceCard(service: Service, incidents: Incident[] = [], maintenance: Maintenance[] = []): string {
-  const name = serviceName(service);
-  const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
+export function effectiveServiceStatus(service: Service, incidents: Incident[] = [], maintenance: Maintenance[] = []): string {
   const activeIncidents = incidents.filter((incident) => incident.isActive && incident.serviceIds.includes(service.id));
-  const status = activeIncidents.some((incident) => incident.severity !== 'minor')
+  return activeIncidents.some((incident) => incident.severity !== 'minor')
     ? 'down'
     : activeIncidents.length
       ? 'degraded'
       : maintenance.some((item) => item.state === 'in_progress' && item.serviceIds.includes(service.id))
         ? 'maintenance'
         : service.status;
+}
+
+export function serviceCard(service: Service, incidents: Incident[] = [], maintenance: Maintenance[] = []): string {
+  const name = serviceName(service);
+  const description = service.descriptionI18n?.[language] ?? service.descriptionI18n?.[language.split('-')[0]] ?? service.description;
+  const status = effectiveServiceStatus(service, incidents, maintenance);
   const detail = service.lastCheckedAt ? `${t('checked')} ${formatDate(service.lastCheckedAt)}` : t('manualMonitoring');
   return `<a class="service-row" href="${base}service.html?id=${encodeURIComponent(service.id)}" title="${escapeHtml(`${name} — ${description} · ${detail}`)}"><span class="service-row-name">${escapeHtml(name)}</span><span class="pill ${status.replace('_', '-')}">${escapeHtml(statusLabel(status))}</span></a>`;
 }

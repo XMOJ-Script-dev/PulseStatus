@@ -18,8 +18,13 @@ async function github<T>(path: string, init?: RequestInit): Promise<T> {
   if (!response.ok) throw new Error(`GitHub API ${response.status}: ${path}`);
   return response.json() as Promise<T>;
 }
-const sourceConfig = parse(await readFile('config/statuspage.yml', 'utf8')) as { issues?: { autoCloseMaintenance?: boolean } };
+const sourceConfig = parse(await readFile('config/statuspage.yml', 'utf8')) as { issues?: { autoCloseMaintenance?: boolean; publishLabel?: string; maintenanceLabel?: string; trustedMaintainers?: string[]; trustedAssociations?: string[] } };
 const autoCloseMaintenance = sourceConfig.issues?.autoCloseMaintenance === true;
+const publishLabel = sourceConfig.issues?.publishLabel ?? 'statuspage/incident';
+const maintenanceLabel = sourceConfig.issues?.maintenanceLabel ?? 'statuspage/maintenance';
+const envMaintainers = (process.env.PULSE_TRUSTED_MAINTAINERS ?? '').split(',').map((value) => value.trim()).filter(Boolean);
+const trustedMaintainers = envMaintainers.length ? envMaintainers : (sourceConfig.issues?.trustedMaintainers ?? []);
+const trustedAssociations = sourceConfig.issues?.trustedAssociations ?? ['OWNER', 'MEMBER', 'COLLABORATOR'];
 async function githubPages<T>(path: string): Promise<T[]> {
   const values: T[] = [];
   for (let page = 1; ; page += 1) {
@@ -29,14 +34,14 @@ async function githubPages<T>(path: string): Promise<T[]> {
   }
 }
 const serviceIds = (process.env.PULSE_SERVICES ?? '').split(',').map((value) => value.trim()).filter(Boolean);
-const config: IssueParseConfig = { publishLabel: 'statuspage/incident', serviceIds, trustedMaintainers: (process.env.PULSE_TRUSTED_MAINTAINERS ?? '').split(',').filter(Boolean), trustedAssociations: ['OWNER', 'MEMBER', 'COLLABORATOR'] };
+const config: IssueParseConfig = { publishLabel, serviceIds, trustedMaintainers, trustedAssociations };
 const issues = await githubPages<GithubIssue>(`/repos/${owner}/${repository}/issues?state=all`);
 const incidents: Incident[] = [];
 const maintenance = [];
 for (const issue of issues) {
   if ('pull_request' in issue) continue;
   const issueServiceIds = issue.labels.map((label) => label.name.slice(8)).filter((id) => serviceIds.includes(id) && issue.labels.some((candidate) => candidate.name === `service/${id}`));
-  if (issue.labels.some((label) => label.name === 'statuspage/maintenance')) {
+  if (issue.labels.some((label) => label.name === maintenanceLabel)) {
     const times = parseMaintenanceTimes(issue.body);
     if (autoCloseMaintenance && issue.state === 'open' && !issue.labels.some((label) => label.name === 'state/cancelled') && !issue.labels.some((label) => label.name === 'state/delayed') && times && new Date(times.endsAt).valueOf() <= Date.now()) {
       await github(`/repos/${owner}/${repository}/issues/${issue.number}`, {

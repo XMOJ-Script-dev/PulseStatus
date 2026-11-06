@@ -1,5 +1,7 @@
 # PulseStatus architecture and runtime logic
 
+**Language:** English · [简体中文](zh/architecture.md)
+
 This document describes how PulseStatus turns repository configuration, GitHub Issues, scheduled probes, and static assets into a public status site. It is the operational reference for contributors who need to change the data pipeline, monitoring behavior, pages, or GitHub Actions workflow.
 
 ## System boundary
@@ -224,7 +226,7 @@ The following list covers every project-owned source, configuration, page, data,
 | `src/data/maintenance.ts` | Maintenance timestamp parsing, time-window state calculation, and Issue conversion. |
 | `src/data/monitor.ts` | Pure monitoring threshold transition logic used by tests and monitoring behavior. |
 | `src/pages/shared.ts` | Shared layout, configured branding, navigation, styles, date formatting, service cards, incident cards, and status classes. |
-| `src/pages/overview.ts` | Loads current summary, incidents, services, maintenance, and uptime; renders the status banner, a 90-day uptime strip, and the Cloudflare-style service directory (full-width group rows with aggregate status pills, member services as hairline-separated rows) ordered by severity. |
+| `src/pages/overview.ts` | Loads current summary, incidents, services, maintenance, and uptime; renders the status banner, a 90-day uptime strip, and the service directory in the configured layout (`standard` Cloudflare-style rows or the rounded `fused` system board), ordered by severity. |
 | `src/pages/history.ts` | Loads uptime and lazy-loads monthly archives of resolved incidents and completed maintenance. |
 | `src/pages/incident.ts` | Finds one published incident by query-string number and renders its timeline. |
 | `src/pages/service.ts` | Finds one service by ID and renders uptime, probe history, related incidents, and maintenance. |

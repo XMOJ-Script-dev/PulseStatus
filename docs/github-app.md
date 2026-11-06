@@ -1,5 +1,7 @@
 # Automation identity: GitHub Actions or PulseStatusBot
 
+**Language:** English · [简体中文](zh/github-app.md)
+
 PulseStatus can use the default `GITHUB_TOKEN` or an installed GitHub App for Issue creation, Issue updates, monitoring-state commits, and other GitHub API operations.
 
 ## Default behavior

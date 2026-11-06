@@ -1,5 +1,7 @@
 # Embed integration
 
+**Language:** English · [简体中文](zh/embed.md)
+
 The embed is an optional, read-only status indicator for another website. It does not render the full service directory or incident history. Use the main status page when visitors need service details, daily uptime, incidents, or maintenance.
 
 ## Basic installation

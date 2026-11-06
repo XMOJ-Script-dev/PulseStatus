@@ -1,0 +1,15 @@
+{
+	"name": "pulsestatus-scheduler",
+	"main": "src/index.ts",
+	"compatibility_date": "2026-11-06",
+	"triggers": {
+		"crons": ["*/5 * * * *"]
+	},
+	"vars": {
+		"GITHUB_OWNER": "XMOJ-Script-dev",
+		"GITHUB_REPO": "PulseStatus",
+		"WORKFLOW_FILE": "statuspage.yml",
+		"GITHUB_REF": "main",
+		"CRON_MINUTES": "5"
+	}
+}

@@ -78,7 +78,10 @@ const translations = {
 } as const;
 
 export type TranslationKey = keyof typeof translations.en;
-export const language = typeof navigator !== 'undefined' && navigator.languages.some((value) => value.toLowerCase().startsWith('zh')) ? 'zh' : 'en';
+const configuredLanguage = typeof window !== 'undefined' ? window.PulseStatusConfig?.language : undefined;
+export const language: 'en' | 'zh' = configuredLanguage === 'zh' || configuredLanguage === 'en'
+  ? configuredLanguage
+  : (typeof navigator !== 'undefined' && navigator.languages.some((value) => value.toLowerCase().startsWith('zh')) ? 'zh' : 'en');
 export const messages = translations[language];
 
 export function t(key: TranslationKey): string {

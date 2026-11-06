@@ -1,12 +1,16 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import { parse } from 'yaml';
+import { applyCheck, effectiveMonitorMode } from '../src/data/monitor';
 import type { MonitorState, ProbeHistory, Service } from '../src/types/status';
 
 const services = JSON.parse(await readFile('config/services.json', 'utf8')) as Array<Service & { checkUrl?: string }>;
-const config = parse(await readFile('config/statuspage.yml', 'utf8')) as { monitoring?: { probeIntervalMinutes?: number } };
-const mode = (process.env.PULSE_MONITOR_MODE ?? 'manual') as 'scheduled' | 'manual' | 'hybrid';
-const timeoutMs = Number(process.env.PULSE_TIMEOUT_MS ?? 5000);
+const config = parse(await readFile('config/statuspage.yml', 'utf8')) as { monitoring?: { mode?: 'scheduled' | 'manual' | 'hybrid'; probeIntervalMinutes?: number; timeoutMs?: number; failuresToDown?: number; successesToRecover?: number; historyRetentionDays?: number } };
+const mode = (process.env.PULSE_MONITOR_MODE ?? config.monitoring?.mode ?? 'manual') as 'scheduled' | 'manual' | 'hybrid';
+const timeoutMs = Number(process.env.PULSE_TIMEOUT_MS ?? config.monitoring?.timeoutMs ?? 5000);
 const defaultIntervalMinutes = config.monitoring?.probeIntervalMinutes ?? 15;
+const failuresToDown = config.monitoring?.failuresToDown ?? 2;
+const successesToRecover = config.monitoring?.successesToRecover ?? 2;
+const retentionDays = config.monitoring?.historyRetentionDays ?? 90;
 let previousServices: Service[] = [];
 try {
   previousServices = (JSON.parse(await readFile('public/data/services.json', 'utf8')) as { services?: Service[] }).services ?? [];
@@ -28,7 +32,7 @@ try {
 const now = new Date();
 const results: Service[] = [];
 for (const service of services) {
-  const monitorMode = service.monitorMode ?? mode;
+  const monitorMode = effectiveMonitorMode(mode, service.monitorMode);
   if (monitorMode === 'manual' || !service.checkUrl) {
     results.push({ ...service, status: 'operational', monitorMode, lastCheckedAt: undefined, latencyMs: undefined });
     continue;
@@ -62,10 +66,21 @@ for (const service of services) {
     status = 'down';
   }
   const checkedAt = now.toISOString();
-  results.push({ ...service, status, latencyMs, lastCheckedAt: checkedAt, monitorMode });
+  const smoothed = applyCheck(
+    { consecutiveFailures: previousState.consecutiveFailures, consecutiveSuccesses: previousState.consecutiveSuccesses, status: previous?.status ?? 'unknown' },
+    { ok: status !== 'down', statusCode: statusCode ?? null, latencyMs: latencyMs ?? null },
+    failuresToDown,
+    successesToRecover,
+  );
+  const displayStatus: Service['status'] = status === 'degraded' ? 'degraded' : smoothed.status;
+  results.push({ ...service, status: displayStatus, latencyMs, lastCheckedAt: checkedAt, monitorMode });
   probeHistory.services[service.id] ??= [];
   probeHistory.services[service.id].push({ checkedAt, status, latencyMs, statusCode });
   monitorState.services[service.id] = { ...previousState, lastProbeAt: checkedAt, probeDue: true };
+}
+const retentionCutoff = now.valueOf() - retentionDays * 86_400_000;
+for (const [serviceId, probes] of Object.entries(probeHistory.services)) {
+  probeHistory.services[serviceId] = probes.filter((probe) => new Date(probe.checkedAt).valueOf() >= retentionCutoff);
 }
 await writeFile('public/data/services.json', JSON.stringify({ schemaVersion: 1, generatedAt: new Date().toISOString(), services: results }, null, 2));
 monitorState.generatedAt = now.toISOString();

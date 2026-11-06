@@ -48,6 +48,14 @@ npm run dev
 
 Set `VITE_BASE_PATH=/REPOSITORY/` for a project Pages site. Leave it `/` for a custom domain. The site uses separate HTML pages, so it does not require SPA fallback.
 
+## On-time probing with Cloudflare Workers (optional)
+
+GitHub does not run `schedule` workflows on time — a `*/5` cron may effectively run only a few times per day on free plans. The `worker/` directory contains a Cloudflare Worker with a Cron Trigger that dispatches the monitoring workflow through the GitHub API every five minutes, on time, with guards against run pileup. The GitHub cron remains as a fallback.
+
+[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/XMOJ-Script-dev/PulseStatus/tree/main/worker)
+
+One click deploys it to your own Cloudflare account; you only need a fine-grained GitHub token with `actions: write` on the status repository. See [`docs/worker.md`](docs/worker.md)（[中文](docs/zh/worker.md)）for the full setup, configuration, and operations guide.
+
 ## What visitors see
 
 The screenshots below are generated from the local application with the browser language set to English. They are intentionally kept in the repository so documentation remains reviewable without relying on an external deployment.
@@ -111,6 +119,8 @@ site:
 See [`docs/configuration.md`](docs/configuration.md) for the complete configuration reference and [`docs/customization.md`](docs/customization.md) for branding and CSS examples.
 
 For the complete runtime flow, data lifecycle, monitoring state machine, Mermaid diagrams, and responsibility of every project file, see [`docs/architecture.md`](docs/architecture.md).
+
+All documents are also available in Simplified Chinese under [`docs/zh/`](docs/zh/configuration.md)（中文文档见 `docs/zh/`）。
 
 ## Automation identity
 

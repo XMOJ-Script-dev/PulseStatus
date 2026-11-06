@@ -98,9 +98,20 @@ export interface SiteConfig {
   favicon: string;
   companyName: string;
   companyUrl?: string;
+  logo?: string;
+  heroTitle?: string;
+  tagline?: string;
+  language?: 'auto' | 'en' | 'zh';
   headerText?: string;
   footerText?: string;
   footerLinks?: Array<{ label: string; url: string }>;
+  navLinks?: Array<{ label: string; url: string }>;
+  showGithub?: boolean;
+  githubUrl?: string;
+  githubLabel?: string;
+  layout?: 'standard' | 'fused';
+  history?: { initialMonths: number; monthsPerLoad: number };
+  colors?: Partial<Record<'brand' | 'brandDeep' | 'success' | 'warning' | 'danger', string>>;
   theme: 'modern' | 'compact' | 'vivid' | 'mono';
   serviceGroups?: Record<string, ServiceGroupConfig>;
 }

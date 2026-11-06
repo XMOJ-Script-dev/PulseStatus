@@ -1,5 +1,7 @@
 # PulseStatus configuration reference
 
+**Language:** English · [简体中文](zh/configuration.md)
+
 PulseStatus is a static site. Configuration is read during the data build and published as JSON/JavaScript under `public/data/`; the browser never reads `config/statuspage.yml` directly.
 
 ## Configuration ownership
@@ -28,6 +30,16 @@ Edit `config/statuspage.yml`:
 | `site.headerText` | no | Optional text displayed below the global header. |
 | `site.footerText` | no | Optional operational or legal text in the footer. |
 | `site.footerLinks` | no | YAML list of `{ label, url }` links shown in the footer. |
+| `site.showGithub` | no | Show the GitHub repository link in the header navigation. Defaults to `true`; set to `false` to hide it. |
+| `site.githubUrl` | no | Target URL of the header repository link. Defaults to `https://github.com/{repository.owner}/{repository.name}` derived from the `repository` section; set it to any URL (or an empty string) to fully control the link. |
+| `site.githubLabel` | no | Text of the header repository link. Defaults to `GitHub`. |
+| `site.layout` | no | Service directory layout: `standard` (full-width Cloudflare-style rows with status pills) or `fused` (a rounded system board combining statuspage.io's container and dots, GitHub Status's colored text statuses, and Cloudflare's uptime strip and group aggregation, with per-service 90-day uptime percentages). Defaults to `standard`. |
+| `site.logo` | no | Image path relative to `public/` (e.g. `brand/logo.png`) replacing the letter mark in the header. Falls back to the built-in gradient "P" mark when unset. |
+| `site.heroTitle` | no | Heading shown in the overview hero. Defaults to `site.name`. |
+| `site.tagline` | no | Subtitle shown in the overview hero. Defaults to the built-in localized tagline. |
+| `site.language` | no | Force the display language: `auto` (follow the visitor's browser, default), `en`, or `zh`. |
+| `site.navLinks` | no | YAML list of `{ label, url }` links appended to the header navigation after the repository link. |
+| `site.colors` | no | Override theme colors with hex values. Supported keys: `brand`, `brandDeep`, `success`, `warning`, `danger`. Example: `colors: { brand: "#0f766e", brandDeep: "#115e59" }`. Applied as CSS variables at runtime, so they compose with `site.theme` and `custom.css`. |
 
 Example:
 
@@ -70,7 +82,7 @@ The `monitoring` section controls probe scheduling and optional automatic Incide
 | Key | Description |
 | --- | --- |
 | `monitoring.mode` | Default mode for services without `monitorMode`: `scheduled`, `manual`, or `hybrid`. |
-| `monitoring.schedule` | Documentation/configuration value for the workflow schedule. The workflow currently runs every five minutes. |
+| `monitoring.schedule` | Workflow trigger cron in `*/N * * * *` form. Must match the `schedule` trigger in `.github/workflows/statuspage.yml` and its cadence must not exceed `probeIntervalMinutes`; both invariants are enforced by `npm run validate-config`. |
 | `monitoring.probeIntervalMinutes` | Default minimum interval between real requests. |
 | `monitoring.timeoutMs` | Maximum duration of a probe request. |
 | `monitoring.failuresToDown` | Consecutive failed probes before a service is considered down. |
@@ -102,19 +114,17 @@ When `autoCloseMaintenance` is `true`, the workflow closes an open, non-cancelle
 
 The workflow needs `contents: write` and `issues: write` permissions to persist monitoring state and update Issues.
 
-## History and embed settings
+## History settings
 
 ```yaml
 history:
   initialMonths: 3
   monthsPerLoad: 3
-
-embed:
-  enabled: true
-  pollIntervalMs: 300000
 ```
 
-`initialMonths` and `monthsPerLoad` control the monthly Incident archives loaded by the History page. The embed is read-only and polls published `summary.json`; its browser-side minimum interval is 60 seconds even when a smaller value is configured.
+`initialMonths` and `monthsPerLoad` control the monthly Incident archives loaded by the History page: the first render shows `initialMonths` months (in batches of `monthsPerLoad`), and the "Load more" button fetches one additional batch per click.
+
+The embed is read-only and polls published `summary.json`. It is configured with `data-*` attributes on its `<script>` tag (see [`embed.md`](embed.md)), not in `statuspage.yml`; its browser-side minimum interval is 60 seconds.
 
 ## Services
 
@@ -151,11 +161,12 @@ Use `publicUrl` for a human-facing link and `checkUrl` only for a bounded health
 
 ### Probe frequency
 
-The GitHub Actions workflow runs every five minutes. `monitoring.probeIntervalMinutes` sets the default number of minutes between real requests:
+`monitoring.probeIntervalMinutes` sets the default number of minutes between real requests:
 
 ```yaml
 monitoring:
   probeIntervalMinutes: 5
+  schedule: "*/5 * * * *"
 ```
 
 Individual services can override it:
@@ -170,6 +181,14 @@ Individual services can override it:
 ```
 
 The check script persists `lastProbeAt` in `public/data/monitor-state.json`. When an interval has not elapsed, it reuses the last result and does not increment consecutive failure or recovery counters. Counters therefore represent real requests, not workflow invocations. Values below five minutes cannot create more checks with GitHub-hosted schedules; use a dedicated external monitor for sub-five-minute requirements.
+
+`monitoring.schedule` must be a cron in the `*/N * * * *` form, and `npm run validate-config` enforces two invariants: the cron minute cadence `N` must not exceed `probeIntervalMinutes`, and the cron must be identical to the `schedule` trigger in `.github/workflows/statuspage.yml`. The config value is the source of truth for the intended cadence; the workflow file is what GitHub actually executes, so the check fails loudly when they drift apart.
+
+`failuresToDown` and `successesToRecover` smooth the published service status: a single failed probe does not immediately mark a service down — it takes `failuresToDown` consecutive failures (and, symmetrically, `successesToRecover` consecutive successes to return to operational). HTTP error responses (degraded) are shown immediately without smoothing. The published status therefore lags the raw probe result by design; `probe-history.json` always records the raw result.
+
+`historyRetentionDays` (default 90) bounds the retention window of `probe-history.json`: records older than the window are trimmed on every check.
+
+One important caveat: GitHub does not guarantee scheduled workflow execution times. On busy periods the `schedule` event is queued and delayed, and on free plans a `*/5` cron may in practice run only a handful of times per day (observed gaps of several hours are possible). The due-based logic above guarantees probes never run *more* often than configured, but it cannot make them run *more* often than the workflow itself triggers. To actually achieve sub-hourly probing, deploy the bundled Cloudflare Worker — a Cron Trigger dispatches the workflow through the GitHub API on schedule — and keep the GitHub cron only as a fallback. See [`worker.md`](worker.md) for the one-click deploy and configuration.
 
 Every real request also appends a record to `public/data/probe-history.json`. Existing records are not edited when a new check runs. Each record contains `checkedAt`, the resulting service status, optional `statusCode`, and optional `latencyMs`; manual services are intentionally absent from this history. The service detail page displays the most recent probe records separately from incident-derived uptime.
 

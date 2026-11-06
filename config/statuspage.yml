@@ -7,6 +7,8 @@ site:
   companyName: XMOJ-Script
   companyUrl: https://xmoj-script.uk
   headerText: Public service communications
+  showGithub: true
+  layout: fused
   footerText: Status updates are published from verified operational data.
   footerLinks:
     - label: GitHub
@@ -43,6 +45,3 @@ serviceGroups:
 history:
   initialMonths: 3
   monthsPerLoad: 3
-embed:
-  enabled: true
-  pollIntervalMs: 300000

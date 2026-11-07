@@ -2,14 +2,14 @@
 
 **Language:** English · [简体中文](zh/worker.md)
 
-GitHub does not guarantee scheduled workflow start times. The Worker polls once per minute and dispatches no more often than the configured five-minute interval. If a prior workflow is still running, it queues one follow-up instead of dropping the probe; GitHub runner availability can still delay execution.
+GitHub does not guarantee scheduled workflow start times. The Worker runs a Cron Trigger every five minutes and dispatches the workflow on that cadence. If a prior workflow is still running, it queues one follow-up instead of dropping the probe; GitHub runner availability can still delay execution.
 
-The `worker/` directory contains a Cloudflare Worker with a one-minute Cron Trigger that dispatches the PulseStatus workflow through the GitHub API. The GitHub-side cron stays enabled as a fallback, so probing continues even if the Worker is removed.
+The `worker/` directory contains a Cloudflare Worker with a five-minute Cron Trigger that dispatches the PulseStatus workflow through the GitHub API. The GitHub-side cron stays enabled as a fallback, so probing continues even if the Worker is removed.
 
 ## Architecture
 
 ```
-Cloudflare Cron Trigger (* * * * *)           GitHub
+Cloudflare Cron Trigger (*/5 * * * *)          GitHub
         │                                       │
         ▼                                       ▼
   pulsestatus-scheduler  ──workflow_dispatch──►  statuspage.yml
@@ -20,7 +20,7 @@ Cloudflare Cron Trigger (* * * * *)           GitHub
 The Worker never probes your services itself. It only decides *whether to start a workflow run*, using two guards:
 
 - **Queued-run guard** — if a run is already `queued`/`waiting`, the trigger is skipped. If a run is executing and the interval has elapsed, the Worker dispatches one follow-up run; the workflow's concurrency group keeps it pending until the current run finishes.
-- **Minimum-spacing guard** — if the most recent run started less than `CRON_MINUTES` minutes ago, the trigger is skipped. The one-minute polling interval starts a run at the first available check after the configured spacing.
+- **Minimum-spacing guard** — if the most recent run started less than `CRON_MINUTES` minutes ago, the trigger is skipped. The five-minute Cron Trigger aligns with the default spacing.
 - Only runs for the configured workflow and branch are considered, so unrelated workflows or branches do not delay probes.
 - The scheduled handler safely skips dispatch when the `GITHUB_TOKEN` secret is not configured.
 

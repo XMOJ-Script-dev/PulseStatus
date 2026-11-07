@@ -2,14 +2,14 @@
 
 **语言：** [English](../worker.md) · 简体中文
 
-GitHub 不保证计划 workflow 的启动时间。Worker 每分钟轮询一次，按配置的五分钟间隔派发；如果上一次 workflow 仍运行，会排队一个后续任务而不是漏掉探测。GitHub Runner 资源繁忙时，实际执行仍可能延迟。
+GitHub 不保证计划 workflow 的启动时间。Worker 每五分钟运行一次 Cron Trigger，并按该节奏派发；如果上一次 workflow 仍运行，会排队一个后续任务而不是漏掉探测。GitHub Runner 资源繁忙时，实际执行仍可能延迟。
 
-`worker/` 目录包含一个每分钟运行的 Cloudflare Cron Trigger，通过 GitHub API 触发 PulseStatus 的 workflow。GitHub 侧的 cron 保留作为兜底，即使删除 Worker 探测也不会中断。
+`worker/` 目录包含一个每五分钟运行的 Cloudflare Cron Trigger，通过 GitHub API 触发 PulseStatus 的 workflow。GitHub 侧的 cron 保留作为兜底，即使删除 Worker 探测也不会中断。
 
 ## 架构
 
 ```
-Cloudflare Cron Trigger (* * * * *)           GitHub
+Cloudflare Cron Trigger (*/5 * * * *)          GitHub
         │                                       │
         ▼                                       ▼
   pulsestatus-scheduler  ──workflow_dispatch──►  statuspage.yml
@@ -20,7 +20,7 @@ Cloudflare Cron Trigger (* * * * *)           GitHub
 Worker 自身不探测你的服务，它只决定*是否启动一次 workflow 运行*，并用两条守卫规则：
 
 - **排队守卫**——已有运行处于 `queued`/`waiting` 时跳过本次触发。如果运行仍在执行且间隔已到，Worker 会派发一个后续运行；workflow 的并发组会让它等待当前运行结束。
-- **最小间隔守卫**——最近一次运行开始时间距今不足 `CRON_MINUTES` 分钟时跳过。每分钟轮询会在间隔到期后的下一次检查时启动运行。
+- **最小间隔守卫**——最近一次运行开始时间距今不足 `CRON_MINUTES` 分钟时跳过。五分钟 Cron Trigger 与默认间隔保持一致。
 - 只检查配置的 workflow 和分支，不会被其他 workflow 或分支上的运行延迟。
 - 未配置 `GITHUB_TOKEN` Secret 时，定时处理器会安全跳过派发。
 

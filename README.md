@@ -50,7 +50,7 @@ Set `VITE_BASE_PATH=/REPOSITORY/` for a project Pages site. Leave it `/` for a c
 
 ## Reliable scheduled probing with Cloudflare Workers (optional)
 
-GitHub does not guarantee when scheduled workflows start. The `worker/` directory contains a Cloudflare Worker that checks every minute and dispatches the monitoring workflow no more frequently than its configured five-minute interval. If a run is still executing, it queues one follow-up instead of dropping the probe; the workflow probes services before synchronizing Issues and checks due endpoints concurrently. GitHub runner availability can still delay execution, and the GitHub cron remains as a fallback.
+GitHub does not guarantee when scheduled workflows start. The `worker/` directory contains a Cloudflare Worker with a five-minute Cron Trigger that dispatches the monitoring workflow. If a run is still executing, it queues one follow-up instead of dropping the probe; the workflow probes services before synchronizing Issues and checks due endpoints concurrently. GitHub runner availability can still delay execution, and the GitHub cron remains as a fallback.
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/XMOJ-Script-dev/PulseStatus/tree/main/worker)
 

@@ -5,7 +5,7 @@ import { language, statusLabel, t } from '../i18n';
 import { escapeHtml } from '../utils/status';
 
 const app = document.querySelector<HTMLDivElement>('#app')!;
-app.innerHTML = layout('PulseStatus', `<section class="hero hero-enterprise"><div class="hero-copy"><p class="eyebrow">${t('publicStatus')}</p><h1>${escapeHtml(window.PulseStatusConfig?.heroTitle ?? window.PulseStatusConfig?.name ?? 'PulseStatus')}</h1><p class="hero-lede">${escapeHtml(window.PulseStatusConfig?.tagline ?? t('tagline'))}</p><p class="trust-line"><span class="trust-check">✓</span>${t('trustedUpdates')}</p></div><div class="hero-aside"><span class="hero-aside-label">${t('liveSnapshot')}</span><strong>${t('incidentCenter')}</strong><a href="${base}history.html">${t('history')} →</a></div></section><div id="status" class="status-banner unknown" aria-live="polite"><span class="status-dot"></span><div><strong>${t('limitedMonitoring')}</strong><span class="status-context">${t('dataFreshness')}</span></div></div><section><div class="section-heading"><div><p class="eyebrow">${t('incidentCenter')}</p><h2>${t('activeIncidents')}</h2></div><div class="section-actions"><span id="incident-count" class="section-count"></span><a class="section-button" href="${base}history.html">${t('viewAllIncidents')}</a></div></div><div id="incidents" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section><div class="section-heading"><div><p class="eyebrow">${t('maintenanceCenter')}</p><h2>${t('maintenance')}</h2></div><span id="maintenance-count" class="section-count"></span></div><div id="maintenance" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section><div class="section-heading"><div><p class="eyebrow">${t('serviceDirectory')}</p><h2>${t('services')}</h2></div><span class="section-note">${t('source')}: ${t('githubIssues')}</span></div><div id="services" class="service-directory"><p class="card muted">${t('limitedMonitoring')}…</p></div></section>`);
+app.innerHTML = layout('PulseStatus', `<section class="hero hero-enterprise"><div class="hero-copy"><p class="eyebrow">${t('publicStatus')}</p><h1>${escapeHtml(window.PulseStatusConfig?.heroTitle ?? window.PulseStatusConfig?.name ?? 'PulseStatus')}</h1><p class="hero-lede">${escapeHtml(window.PulseStatusConfig?.tagline ?? t('tagline'))}</p><p class="trust-line"><span class="trust-check">✓</span>${t('trustedUpdates')}</p></div><div class="hero-aside"><span class="hero-aside-label">${t('liveSnapshot')}</span><strong>${t('incidentCenter')}</strong><a href="${base}history.html">${t('history')} →</a></div></section><div id="status" class="status-banner unknown" aria-live="polite"><span class="status-dot"></span><div><strong>${t('limitedMonitoring')}</strong><span class="status-context">${t('dataFreshness')}</span></div></div><section id="active-incidents-section"><div class="section-heading"><div><p class="eyebrow">${t('incidentCenter')}</p><h2>${t('activeIncidents')}</h2></div><div class="section-actions"><span id="incident-count" class="section-count"></span><a class="section-button" href="${base}history.html">${t('viewAllIncidents')}</a></div></div><div id="incidents" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section id="maintenance-section"><div class="section-heading"><div><p class="eyebrow">${t('maintenanceCenter')}</p><h2>${t('maintenance')}</h2></div><span id="maintenance-count" class="section-count"></span></div><div id="maintenance" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section><div class="section-heading"><div><p class="eyebrow">${t('serviceDirectory')}</p><h2>${t('services')}</h2></div><span class="section-note">${t('source')}: ${t('githubIssues')}</span></div><div id="services" class="service-directory"><p class="card muted">${t('limitedMonitoring')}…</p></div></section><section id="incident-history-section"><div class="section-heading"><div><p class="eyebrow">${t('resolvedEvents')}</p><h2>${t('incidentHistory')}</h2></div><a class="section-button" href="${base}history.html">${t('viewIssueHistory')}</a></div><div id="recent-incidents" class="incident-list"><p class="card muted">${t('limitedMonitoring')}…</p></div></section>`);
 
 async function load<T>(path: string): Promise<T> {
   const response = await fetch(dataUrl(path));
@@ -23,14 +23,14 @@ function uptimeStrip(uptime: UptimeHistory): string {
   }).join('');
   const values = uptime.days.flatMap((day) => Object.values(day.services)).filter((value): value is number => typeof value === 'number');
   const average = values.length ? (values.reduce((total, value) => total + value, 0) / values.length).toFixed(2) : null;
-  return `<div class="directory-uptime"><div class="directory-uptime-heading"><span>${t('uptime90days')}</span>${average ? `<strong>${average}%</strong>` : ''}</div><div class="uptime-days directory-uptime-strip" role="img" aria-label="${t('uptime90days')}">${cells}</div></div>`;
+  return `<div class="directory-uptime"><div class="directory-uptime-heading"><span>${t('uptime90days')}</span>${average ? `<strong>${average}%</strong>` : ''}</div><div class="uptime-days directory-uptime-strip" role="group" aria-label="${t('uptime90days')}">${cells}</div></div>`;
 }
 
 async function render(): Promise<void> {
   try {
     const [summary, incidents, services, maintenance, uptime] = await Promise.all([
       load<Summary>('summary.json'),
-      load<{ schemaVersion: 1; generatedAt: string; incidents: Incident[] }>('incidents-active.json'),
+      load<{ schemaVersion: 1; generatedAt: string; incidents: Incident[] }>('incidents-all.json'),
       load<{ schemaVersion: 1; generatedAt: string; services: Service[] }>('services.json'),
       load<{ schemaVersion: 1; generatedAt: string; maintenance: Maintenance[] }>('maintenance.json'),
       load<UptimeHistory>('uptime.json'),
@@ -41,10 +41,16 @@ async function render(): Promise<void> {
     status.innerHTML = `<span class="status-dot"></span><div><strong>${statusLabel(summary.overall)}</strong><span class="status-context">${outageWithoutIncident ? t('noPublishedIncidentForOutage') : `${t('updated')} ${formatDate(summary.generatedAt)}`}</span></div>`;
     const active = sortIncidents(incidents.incidents.filter((incident) => incident.isActive));
     document.querySelector('#incident-count')!.textContent = `${active.length} ${t('active')}`;
-    document.querySelector('#incidents')!.innerHTML = active.length ? active.map((incident) => incidentCard(incident, services.services)).join('') : `<p class="card empty"><strong>${t('noActiveIncidents')}</strong><span>${outageWithoutIncident ? t('noPublishedIncidentForOutage') : t('noIncidentsNote')}</span></p>`;
+    document.querySelector<HTMLElement>('#active-incidents-section')!.hidden = active.length === 0;
+    document.querySelector('#incidents')!.innerHTML = active.map((incident) => incidentCard(incident, services.services)).join('');
     const visibleMaintenance = [...maintenance.maintenance].filter((item) => item.state === 'scheduled' || item.state === 'in_progress').sort((a, b) => b.startsAt.localeCompare(a.startsAt));
     document.querySelector('#maintenance-count')!.textContent = `${visibleMaintenance.length} ${t('maintenanceItems')}`;
-    document.querySelector('#maintenance')!.innerHTML = visibleMaintenance.length ? visibleMaintenance.map((item) => maintenanceCard(item, services.services)).join('') : `<p class="card empty">${t('noMaintenance')}</p>`;
+    document.querySelector<HTMLElement>('#maintenance-section')!.hidden = visibleMaintenance.length === 0;
+    document.querySelector('#maintenance')!.innerHTML = visibleMaintenance.map((item) => maintenanceCard(item, services.services)).join('');
+    const recentIncidents = incidents.incidents.filter((incident) => !incident.isActive)
+      .sort((a, b) => (b.closedAt ?? b.updatedAt).localeCompare(a.closedAt ?? a.updatedAt))
+      .slice(0, 5);
+    document.querySelector('#recent-incidents')!.innerHTML = recentIncidents.map((incident) => incidentCard(incident, services.services)).join('') || `<p class="card empty">${t('noHistory')}</p>`;
     const site = window.PulseStatusConfig;
     const groupConfig = site?.serviceGroups ?? {};
     const parentByGroup = new Map<string, string | undefined>();

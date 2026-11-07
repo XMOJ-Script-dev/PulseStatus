@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildTimeline, isActiveIssue, issueToIncident, parseIssueLabels, trustedComment } from '../src/data/issues';
 import { issueToMaintenance, maintenanceState, parseMaintenanceTimes } from '../src/data/maintenance';
-import { applyCheck } from '../src/data/monitor';
+import { applyCheck, effectiveMonitorMode } from '../src/data/monitor';
 import { buildDailyUptime, buildSummary, groupHistoryByMonth, groupMaintenanceByMonth, groupStatus, groupStatusRank, mergeTimelineEntries, renderMarkdown } from '../src/utils/status';
 import type { Incident, Maintenance, Service } from '../src/types/status';
 
@@ -122,6 +122,12 @@ describe('history and maintenance', () => {
 });
 
 describe('monitoring thresholds', () => {
+  it('uses the configured global mode unless a service overrides it', () => {
+    expect(effectiveMonitorMode('hybrid')).toBe('hybrid');
+    expect(effectiveMonitorMode('hybrid', 'manual')).toBe('manual');
+    expect(effectiveMonitorMode('manual', 'scheduled')).toBe('scheduled');
+  });
+
   it('requires configured consecutive failures and successes', () => {
     const down = applyCheck({ consecutiveFailures: 1, consecutiveSuccesses: 0, status: 'unknown' }, { ok: false, statusCode: null, latencyMs: null }, 2, 2);
     expect(down.status).toBe('down');

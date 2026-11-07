@@ -44,10 +44,10 @@ sequenceDiagram
     GH->>App: Create installation token when PULSE_BOT_MODE=app
     App-->>GH: Short-lived token or fallback warning
     GH->>Repo: Checkout with App token or GITHUB_TOKEN
-    GH->>API: Read all Issues and trusted comments
-    API-->>FS: incidents-all.json, incidents-active.json, maintenance.json
     GH->>FS: Run scheduled/hybrid probes when each interval is due
     FS-->>FS: Append probe-history.json and update current services.json
+    GH->>API: Read all Issues and trusted comments
+    API-->>FS: incidents-all.json, incidents-active.json, maintenance.json
     GH->>API: Create/close automated Incident when thresholds are met
     GH->>Repo: Commit monitor-state.json and probe-history.json
     GH->>FS: Derive summary, uptime, monthly history, site.js, badges
@@ -60,8 +60,8 @@ sequenceDiagram
 1. **选择身份。** 仅当 `PULSE_BOT_MODE=app` 且两个 App 密钥都存在时，workflow 才会尝试使用已配置的 GitHub App。安装缺失或凭据无效会产生警告，并回退到 `GITHUB_TOKEN`。
 2. **检出源码。** 所选 token 用于仓库检出和后续的内容推送。
 3. **校验代码与配置。** 在任何发布之前，先运行类型检查、测试和 `validate-config`。
-4. **同步 Issues。** `sync-issues.ts` 下载分页的 Issues，拒绝无效 label，只保留受信任的评论，并写入公开的 incident/maintenance 快照。
-5. **探测服务。** `check-services.ts` 只检查带有 `checkUrl` 的 scheduled 或 hybrid 服务，且仅当该服务自己的间隔已到期时才检查。Manual 服务无条件跳过。
+4. **探测服务。** `check-services.ts` 在同步 Issues 之前运行，并发检查已到期的 scheduled/hybrid 服务；每次结果在请求完成时记录时间。Manual 服务会无条件跳过。
+5. **同步 Issues。** `sync-issues.ts` 下载分页的 Issues，拒绝无效 label，只保留受信任的评论，并写入公开的 incident/maintenance 快照。
 6. **发布自动化 Incident。** `auto-publish-incidents.ts` 消费当前的探测结果和持久化的计数器。在配置的故障阈值之后创建一个带标记的 Issue，并在配置的恢复阈值之后关闭它。
 7. **关闭已完成的维护。** 当 `issues.autoCloseMaintenance` 启用时，`sync-issues.ts` 会在结束时间之后关闭处于打开状态、未取消的 maintenance Issue。带有 `state/delayed` label 的 Issue 除外：它们保持打开状态，并在计划结束时间之后导出为进行中。
 8. **持久化监控状态。** workflow 以 `[skip ci]` 提交计数器文件、服务快照和只追加的探测历史，使状态能在下一次定时运行中保留下来，而不会递归触发 workflow。

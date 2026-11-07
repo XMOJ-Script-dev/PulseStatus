@@ -84,7 +84,7 @@ async function loadUptime(): Promise<void> {
         const label = `${t('uptimeDay')} ${day.date}: ${value.toFixed(3)}%`;
         return `<span class="uptime-day has-tooltip" data-level="${uptimeLevel(value)}" data-tooltip="${escapeHtml(label)}" tabindex="0" aria-label="${escapeHtml(label)}"></span>`;
       }).join('');
-      return `<article class="card uptime-card"><div class="uptime-card-heading"><h3>${serviceName(service)}</h3><span><strong>${average.toFixed(3)}%</strong><small>${t('uptimeAverage')}</small></span></div><div class="uptime-days" role="img" aria-label="${t('uptimeLegend')} — ${serviceName(service)}">${cells}</div></article>`;
+      return `<article class="card uptime-card"><div class="uptime-card-heading"><h3>${serviceName(service)}</h3><span><strong>${average.toFixed(3)}%</strong><small>${t('uptimeAverage')}</small></span></div><div class="uptime-days" role="group" aria-label="${t('uptimeLegend')} — ${serviceName(service)}">${cells}</div></article>`;
     });
     document.querySelector('#uptime-history')!.innerHTML = cards.length ? cards.join('') : `<p class="card empty">${t('noServiceData')}</p>`;
   } catch (error) {

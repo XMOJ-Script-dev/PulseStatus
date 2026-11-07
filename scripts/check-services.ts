@@ -30,12 +30,10 @@ try {
   if ((error as NodeJS.ErrnoException).code !== 'ENOENT') throw error;
 }
 const now = new Date();
-const results: Service[] = [];
-for (const service of services) {
+const results = await Promise.all(services.map(async (service): Promise<Service> => {
   const monitorMode = effectiveMonitorMode(mode, service.monitorMode);
   if (monitorMode === 'manual' || !service.checkUrl) {
-    results.push({ ...service, status: 'operational', monitorMode, lastCheckedAt: undefined, latencyMs: undefined });
-    continue;
+    return { ...service, status: 'operational', monitorMode, lastCheckedAt: undefined, latencyMs: undefined };
   }
   const previous = previousServices.find((item) => item.id === service.id);
   const previousState = monitorState.services[service.id] ?? { consecutiveFailures: 0, consecutiveSuccesses: 0 };
@@ -46,9 +44,8 @@ for (const service of services) {
   const snapshotIsStale = Number.isFinite(lastProbeValue) && (!Number.isFinite(lastCheckedValue) || lastCheckedValue < lastProbeValue);
   const due = snapshotIsStale || !lastProbeAt || !Number.isFinite(lastProbeValue) || now.valueOf() - lastProbeValue >= intervalMinutes * 60_000;
   if (!due && previous) {
-    results.push({ ...previous, ...service, status: previous.status, lastCheckedAt: previous.lastCheckedAt, latencyMs: previous.latencyMs, monitorMode });
     monitorState.services[service.id] = { ...previousState, probeDue: false };
-    continue;
+    return { ...previous, ...service, status: previous.status, lastCheckedAt: previous.lastCheckedAt, latencyMs: previous.latencyMs, monitorMode };
   }
   const started = performance.now();
   let status: Service['status'] = 'unknown';
@@ -65,7 +62,7 @@ for (const service of services) {
     latencyMs = Math.round(performance.now() - started);
     status = 'down';
   }
-  const checkedAt = now.toISOString();
+  const checkedAt = new Date().toISOString();
   const smoothed = applyCheck(
     { consecutiveFailures: previousState.consecutiveFailures, consecutiveSuccesses: previousState.consecutiveSuccesses, status: previous?.status ?? 'unknown' },
     { ok: status !== 'down', statusCode: statusCode ?? null, latencyMs: latencyMs ?? null },
@@ -73,11 +70,11 @@ for (const service of services) {
     successesToRecover,
   );
   const displayStatus: Service['status'] = status === 'degraded' ? 'degraded' : smoothed.status;
-  results.push({ ...service, status: displayStatus, latencyMs, lastCheckedAt: checkedAt, monitorMode });
   probeHistory.services[service.id] ??= [];
   probeHistory.services[service.id].push({ checkedAt, status, latencyMs, statusCode });
   monitorState.services[service.id] = { ...previousState, lastProbeAt: checkedAt, probeDue: true };
-}
+  return { ...service, status: displayStatus, latencyMs, lastCheckedAt: checkedAt, monitorMode };
+}));
 const retentionCutoff = now.valueOf() - retentionDays * 86_400_000;
 for (const [serviceId, probes] of Object.entries(probeHistory.services)) {
   probeHistory.services[serviceId] = probes.filter((probe) => new Date(probe.checkedAt).valueOf() >= retentionCutoff);

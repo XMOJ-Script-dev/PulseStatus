@@ -22,6 +22,7 @@ The Worker never probes your services itself. It only decides *whether to start 
 - **Queued-run guard** — if a run is already `queued`/`waiting`, the trigger is skipped. If a run is executing and the interval has elapsed, the Worker dispatches one follow-up run; the workflow's concurrency group keeps it pending until the current run finishes.
 - **Minimum-spacing guard** — if the most recent run started less than `CRON_MINUTES` minutes ago, the trigger is skipped. The one-minute polling interval starts a run at the first available check after the configured spacing.
 - Only runs for the configured workflow and branch are considered, so unrelated workflows or branches do not delay probes.
+- The scheduled handler safely skips dispatch when the `GITHUB_TOKEN` secret is not configured.
 
 ## One-click deploy
 

@@ -73,6 +73,10 @@ async function runTrigger(env: Env, dryRun: boolean): Promise<TriggerReport> {
 
 export default {
 	async scheduled(_controller: ScheduledController, env: Env, ctx: ExecutionContext): Promise<void> {
+		if (!env.GITHUB_TOKEN) {
+			console.error('GITHUB_TOKEN secret is not set; scheduled dispatch skipped.');
+			return;
+		}
 		ctx.waitUntil(
 			runTrigger(env, false).then((report) => {
 				if (report.action === 'error') console.error(JSON.stringify(report));

@@ -3,7 +3,7 @@
 	"main": "src/index.ts",
 	"compatibility_date": "2026-11-06",
 	"triggers": {
-		"crons": ["*/5 * * * *"]
+		"crons": ["* * * * *"]
 	},
 	"vars": {
 		"GITHUB_OWNER": "XMOJ-Script-dev",

@@ -2,25 +2,26 @@
 
 **Language:** English · [简体中文](zh/worker.md)
 
-GitHub does not guarantee scheduled workflow execution times: on free plans a `*/5` cron may in practice run only a few times per day, which makes sub-hourly probing impossible with the built-in `schedule` trigger alone (see [Probe frequency](configuration.md#probe-frequency) for measurements).
+GitHub does not guarantee scheduled workflow start times. The Worker polls once per minute and dispatches no more often than the configured five-minute interval. If a prior workflow is still running, it queues one follow-up instead of dropping the probe; GitHub runner availability can still delay execution.
 
-The `worker/` directory contains a Cloudflare Worker that fixes this: a **Cron Trigger runs on time, every time**, and dispatches the PulseStatus workflow through the GitHub API. The GitHub-side cron stays enabled as a fallback, so probing continues even if the Worker is removed.
+The `worker/` directory contains a Cloudflare Worker with a one-minute Cron Trigger that dispatches the PulseStatus workflow through the GitHub API. The GitHub-side cron stays enabled as a fallback, so probing continues even if the Worker is removed.
 
 ## Architecture
 
 ```
-Cloudflare Cron Trigger (*/5 * * * *)        GitHub
+Cloudflare Cron Trigger (* * * * *)           GitHub
         │                                       │
         ▼                                       ▼
   pulsestatus-scheduler  ──workflow_dispatch──►  statuspage.yml
-  ├─ skip if a run is in progress                 (probes services,
+  ├─ skip if a run is already queued              (probes services,
   └─ skip if a run started < 4 min ago             publishes data)
 ```
 
 The Worker never probes your services itself. It only decides *whether to start a workflow run*, using two guards:
 
-- **In-progress guard** — if any workflow run is `queued`/`in_progress`, the trigger is skipped. This prevents run pileup, because the workflow runs with `cancel-in-progress: false`.
-- **Minimum-spacing guard** — if the most recent run started less than `CRON_MINUTES − 1` minutes ago, the trigger is skipped. This enforces the cadence even when runs finish quickly.
+- **Queued-run guard** — if a run is already `queued`/`waiting`, the trigger is skipped. If a run is executing and the interval has elapsed, the Worker dispatches one follow-up run; the workflow's concurrency group keeps it pending until the current run finishes.
+- **Minimum-spacing guard** — if the most recent run started less than `CRON_MINUTES` minutes ago, the trigger is skipped. The one-minute polling interval starts a run at the first available check after the configured spacing.
+- Only runs for the configured workflow and branch are considered, so unrelated workflows or branches do not delay probes.
 
 ## One-click deploy
 
@@ -42,7 +43,7 @@ All values live in `worker/wrangler.jsonc` and can be overridden in the Cloudfla
 | `GITHUB_REPO` | `PulseStatus` | Repository name. |
 | `WORKFLOW_FILE` | `statuspage.yml` | Workflow file name, as accepted by the `workflow_dispatch` API. |
 | `GITHUB_REF` | `main` | Branch or tag to dispatch. |
-| `CRON_MINUTES` | `5` | Expected trigger cadence; the minimum-spacing guard uses `CRON_MINUTES − 1`. Must match the cron in `triggers.crons` and `monitoring.schedule`. |
+| `CRON_MINUTES` | `5` | Minimum spacing between workflow runs; must match `monitoring.probeIntervalMinutes`. |
 
 ## Operations
 

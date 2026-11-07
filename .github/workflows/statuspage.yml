@@ -57,6 +57,7 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run validate-config
+      - run: npm run check-services
       - name: Sync GitHub Issues
         env:
           GITHUB_TOKEN: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}
@@ -65,9 +66,6 @@ jobs:
           PULSE_SERVICES: web,api,assets,docs
           PULSE_TRUSTED_MAINTAINERS: ${{ vars.PULSE_TRUSTED_MAINTAINERS }}
         run: npm run sync-issues
-      - run: npm run check-services
-        env:
-          PULSE_MONITOR_MODE: manual
       - name: Publish automated incidents
         env:
           GITHUB_TOKEN: ${{ steps.automation-token.outputs.token || secrets.GITHUB_TOKEN }}

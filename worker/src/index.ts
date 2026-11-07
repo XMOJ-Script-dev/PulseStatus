@@ -21,7 +21,7 @@ interface WorkflowRun {
 }
 
 const GITHUB_API = 'https://api.github.com';
-const ACTIVE_STATUSES = new Set(['queued', 'in_progress', 'waiting', 'requested', 'pending']);
+const QUEUED_STATUSES = new Set(['queued', 'waiting', 'requested', 'pending']);
 
 function githubHeaders(env: Env): HeadersInit {
 	return {
@@ -34,17 +34,22 @@ function githubHeaders(env: Env): HeadersInit {
 
 async function runTrigger(env: Env, dryRun: boolean): Promise<TriggerReport> {
 	const base = `/repos/${encodeURIComponent(env.GITHUB_OWNER)}/${encodeURIComponent(env.GITHUB_REPO)}`;
-	const runsResponse = await fetch(`${GITHUB_API}${base}/actions/runs?per_page=10`, { headers: githubHeaders(env) });
+	const workflowRunsUrl = new URL(`${GITHUB_API}${base}/actions/workflows/${encodeURIComponent(env.WORKFLOW_FILE)}/runs`);
+	workflowRunsUrl.searchParams.set('per_page', '10');
+	if (!env.GITHUB_REF.startsWith('refs/tags/')) {
+		workflowRunsUrl.searchParams.set('branch', env.GITHUB_REF.replace(/^refs\/heads\//, ''));
+	}
+	const runsResponse = await fetch(workflowRunsUrl, { headers: githubHeaders(env) });
 	if (!runsResponse.ok) {
 		return { action: 'error', detail: `GitHub API ${runsResponse.status} while listing workflow runs`, at: new Date().toISOString() };
 	}
 	const runsData = (await runsResponse.json()) as { workflow_runs?: WorkflowRun[] };
 	const runs = runsData.workflow_runs ?? [];
-	const inProgress = runs.filter((run) => ACTIVE_STATUSES.has(run.status)).length;
-	if (inProgress > 0) {
+	const inProgress = runs.filter((run) => run.status === 'in_progress').length;
+	if (runs.some((run) => QUEUED_STATUSES.has(run.status))) {
 		return { action: 'skipped-in-progress', inProgress, at: new Date().toISOString() };
 	}
-	const minIntervalMinutes = Math.max(1, Number(env.CRON_MINUTES ?? '5') - 1);
+	const minIntervalMinutes = Math.max(1, Number(env.CRON_MINUTES ?? '5'));
 	const latest = runs[0];
 	if (latest) {
 		const ageMinutes = (Date.now() - new Date(latest.created_at).valueOf()) / 60_000;

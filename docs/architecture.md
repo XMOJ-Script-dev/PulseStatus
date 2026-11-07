@@ -44,10 +44,10 @@ sequenceDiagram
     GH->>App: Create installation token when PULSE_BOT_MODE=app
     App-->>GH: Short-lived token or fallback warning
     GH->>Repo: Checkout with App token or GITHUB_TOKEN
-    GH->>API: Read all Issues and trusted comments
-    API-->>FS: incidents-all.json, incidents-active.json, maintenance.json
     GH->>FS: Run scheduled/hybrid probes when each interval is due
     FS-->>FS: Append probe-history.json and update current services.json
+    GH->>API: Read all Issues and trusted comments
+    API-->>FS: incidents-all.json, incidents-active.json, maintenance.json
     GH->>API: Create/close automated Incident when thresholds are met
     GH->>Repo: Commit monitor-state.json and probe-history.json
     GH->>FS: Derive summary, uptime, monthly history, site.js, badges
@@ -60,8 +60,8 @@ sequenceDiagram
 1. **Select an identity.** The workflow attempts the configured GitHub App only when `PULSE_BOT_MODE=app` and both App secrets exist. A missing installation or invalid credentials produces a warning and falls back to `GITHUB_TOKEN`.
 2. **Checkout source.** The selected token is used for repository checkout and later content pushes.
 3. **Validate code and configuration.** Type checking, tests, and `validate-config` run before any publication.
-4. **Synchronize Issues.** `sync-issues.ts` downloads paginated Issues, rejects invalid labels, keeps only trusted comments, and writes public incident/maintenance snapshots.
-5. **Probe services.** `check-services.ts` checks only scheduled or hybrid services with a `checkUrl`, and only when the service-specific interval has elapsed. Manual services are skipped unconditionally.
+4. **Probe services.** `check-services.ts` runs before Issue synchronization, checks due scheduled/hybrid services concurrently, and stamps each result when its request completes. Manual services are skipped unconditionally.
+5. **Synchronize Issues.** `sync-issues.ts` downloads paginated Issues, rejects invalid labels, keeps only trusted comments, and writes public incident/maintenance snapshots.
 6. **Publish automated incidents.** `auto-publish-incidents.ts` consumes the current probe result and persisted counters. It creates one marked Issue after the configured failure threshold and closes it after the configured recovery threshold.
 7. **Close completed maintenance.** `sync-issues.ts` closes an open, non-cancelled maintenance Issue after its end time when `issues.autoCloseMaintenance` is enabled. Issues carrying the `state/delayed` label are exempt: they stay open and are exported as in progress past their scheduled end.
 8. **Persist monitoring state.** The workflow commits the counter file, service snapshot, and append-only probe history with `[skip ci]`, so state survives the next scheduled run without recursively triggering the workflow.

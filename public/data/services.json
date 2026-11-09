@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-11-09T01:59:35.602Z",
+  "generatedAt": "2026-11-09T09:15:28.020Z",
   "services": [
     {
       "id": "web",
@@ -19,8 +19,8 @@
       "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
       "status": "operational",
-      "latencyMs": 217,
-      "lastCheckedAt": "2026-11-09T01:59:35.599Z"
+      "latencyMs": 152,
+      "lastCheckedAt": "2026-11-09T09:15:28.014Z"
     },
     {
       "id": "api",
@@ -75,8 +75,8 @@
       "checkIntervalMinutes": 15,
       "monitorMode": "scheduled",
       "status": "operational",
-      "latencyMs": 197,
-      "lastCheckedAt": "2026-11-09T01:59:35.601Z"
+      "latencyMs": 114,
+      "lastCheckedAt": "2026-11-09T09:15:28.020Z"
     }
   ]
 }

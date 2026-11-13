@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-13T14:35:29.938Z",
+  "incidents": [
+    {
+      "url": "https://github.com/demo/pulsestatus-demo",
+      "bodySummary": "Demo data: the documentation site was unreachable for 40 minutes during a deployment.",
+      "bodyMarkdown": "Demo data: the documentation site was unreachable for 40 minutes during a deployment.",
+      "timeline": [
+        {
+          "id": "issue-demo-100-opened",
+          "at": "2026-11-10T14:35:25.801Z",
+          "type": "issue_event",
+          "text": "Incident published."
+        },
+        {
+          "id": "issue-demo-100-resolved",
+          "at": "2026-11-10T15:15:25.801Z",
+          "type": "state_change",
+          "state": "resolved",
+          "text": ""
+        }
+      ],
+      "id": "issue-demo-100",
+      "number": 100,
+      "title": "[Demo] Brief docs site outage",
+      "startedAt": "2026-11-10T14:35:25.801Z",
+      "updatedAt": "2026-11-10T15:15:25.801Z",
+      "closedAt": "2026-11-10T15:15:25.801Z",
+      "state": "resolved",
+      "severity": "minor",
+      "serviceIds": [
+        "docs"
+      ],
+      "isActive": false,
+      "summary": "Demo data: the documentation site was unreachable for 40 minutes during a deployment."
+    },
+    {
+      "url": "https://github.com/demo/pulsestatus-demo",
+      "bodySummary": "Demo data: image serving was degraded for two hours after a storage backend failure.",
+      "bodyMarkdown": "Demo data: image serving was degraded for two hours after a storage backend failure.",
+      "timeline": [
+        {
+          "id": "issue-demo-99-opened",
+          "at": "2026-11-01T14:35:25.801Z",
+          "type": "issue_event",
+          "text": "Incident published."
+        },
+        {
+          "id": "issue-demo-99-resolved",
+          "at": "2026-11-01T16:35:25.801Z",
+          "type": "state_change",
+          "state": "resolved",
+          "text": ""
+        }
+      ],
+      "id": "issue-demo-99",
+      "number": 99,
+      "title": "[Demo] Assets service degradation",
+      "startedAt": "2026-11-01T14:35:25.801Z",
+      "updatedAt": "2026-11-01T16:35:25.801Z",
+      "closedAt": "2026-11-01T16:35:25.801Z",
+      "state": "resolved",
+      "severity": "critical",
+      "serviceIds": [
+        "assets"
+      ],
+      "isActive": false,
+      "summary": "Demo data: image serving was degraded for two hours after a storage backend failure."
+    }
+  ],
+  "maintenance": []
+}

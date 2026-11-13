@@ -56,6 +56,14 @@ GitHub does not guarantee when scheduled workflows start. The `worker/` director
 
 One click deploys it to your own Cloudflare account; you only need a fine-grained GitHub token with `actions: write` on the status repository. See [`docs/worker.md`](docs/worker.md)（[中文](docs/zh/worker.md)）for the full setup, configuration, and operations guide.
 
+## Capability overview
+
+- **Subscriptions** — Atom feed (`feed.xml`), iCalendar maintenance feed (`maintenance.ics`), Discord/Slack webhook and ntfy.sh push on incident open/resolve (webhook URL via the `PULSE_WEBHOOK_URL` secret).
+- **Incident content** — timeline, postmortems (`## Postmortem` section in the issue body), per-incident duration, severity colors.
+- **Monitoring** — HTTP and TCP probes, threshold smoothing, response-time chart per service, stale-data banner, 90-day uptime badges and per-row percentages.
+- **Experience** — bilingual UI with visitor theme switch (light/dark/auto), Cloudflare-style or fused layout, incident search and severity filters, monthly summaries, uptime CSV export, GitHub announcements section, external dependency status chips.
+- **GitHub-native** — `STATUS.md` live summary committed to the repository, service runbook links, single-level service dependencies, deterministic demo data mode (`monitoring.demoData`).
+
 ## What visitors see
 
 The screenshots below are generated from the local application with the browser language set to English. They are intentionally kept in the repository so documentation remains reviewable without relying on an external deployment.

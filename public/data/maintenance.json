@@ -1,1 +1,31 @@
-{"schemaVersion":1,"generatedAt":"1970-01-01T00:00:00.000Z","maintenance":[]}
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-13T14:35:25.801Z",
+  "maintenance": [
+    {
+      "id": "maintenance-demo-7",
+      "title": "[Demo] API database upgrade",
+      "startsAt": "2026-11-13T14:25:25.801Z",
+      "endsAt": "2026-11-13T15:25:25.801Z",
+      "timezone": "UTC",
+      "serviceIds": [
+        "api",
+        "assets"
+      ],
+      "url": "https://github.com/demo/pulsestatus-demo",
+      "state": "in_progress"
+    },
+    {
+      "id": "maintenance-demo-8",
+      "title": "[Demo] Planned network maintenance",
+      "startsAt": "2026-11-15T14:35:25.801Z",
+      "endsAt": "2026-11-15T16:05:25.801Z",
+      "timezone": "UTC",
+      "serviceIds": [
+        "web"
+      ],
+      "url": "https://github.com/demo/pulsestatus-demo",
+      "state": "scheduled"
+    }
+  ]
+}

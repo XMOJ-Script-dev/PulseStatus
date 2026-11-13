@@ -1,250 +1,7 @@
 {
   "schemaVersion": 1,
-  "generatedAt": "2026-10-17T04:09:37.623Z",
+  "generatedAt": "2026-11-13T14:35:29.938Z",
   "days": [
-    {
-      "date": "2026-07-20",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-21",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-22",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-23",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-24",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-25",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-26",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-27",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-28",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-29",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-30",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-07-31",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-01",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-02",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-03",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-04",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-05",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-06",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-07",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-08",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-09",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-10",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-11",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-12",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-13",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-14",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
-    {
-      "date": "2026-08-15",
-      "services": {
-        "web": 100,
-        "api": 100,
-        "assets": 100,
-        "docs": 100
-      }
-    },
     {
       "date": "2026-08-16",
       "services": {
@@ -808,6 +565,249 @@
       "services": {
         "web": 100,
         "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-18",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-19",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-20",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-21",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-22",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-23",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-24",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-25",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-26",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-27",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-28",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-29",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-30",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-10-31",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-01",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 91.667,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-02",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-03",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-04",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-05",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-06",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-07",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-08",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-09",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-10",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 97.222
+      }
+    },
+    {
+      "date": "2026-11-11",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-12",
+      "services": {
+        "web": 100,
+        "api": 100,
+        "assets": 100,
+        "docs": 100
+      }
+    },
+    {
+      "date": "2026-11-13",
+      "services": {
+        "web": 100,
+        "api": 98.287,
         "assets": 100,
         "docs": 100
       }

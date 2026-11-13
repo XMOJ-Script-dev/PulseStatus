@@ -40,6 +40,9 @@ PulseStatus 是一个静态站点。配置在数据构建阶段读取，并以 J
 | `site.language` | 否 | 强制显示语言：`auto`（跟随访问者浏览器，默认）、`en` 或 `zh`。 |
 | `site.navLinks` | 否 | `{ label, url }` 链接 YAML 列表，追加在页头导航的仓库链接之后。 |
 | `site.colors` | 否 | 用十六进制值覆盖主题色。支持的键：`brand`、`brandDeep`、`success`、`warning`、`danger`。示例：`colors: { brand: "#0f766e", brandDeep: "#115e59" }`。在运行时作为 CSS 变量注入，与 `site.theme` 和 `custom.css` 叠加生效。 |
+| `site.url` | 否 | 状态站的公开绝对 URL（如 `https://status.example.com`）。启用 `feed.xml`、`maintenance.ics`、`sitemap.xml` 和社交 meta 标签。未设置时回退到 `site.companyUrl`。 |
+| `site.headHtml` | 否 | 注入到每页 `<head>` 的原始 HTML（analytics、站点验证）。信任级别等同 `custom.css`——只注入你自己控制的代码。 |
+| `site.externalStatus` | 否 | `{ name, apiUrl }` 列表，展示外部状态页的状态芯片（兼容 statuspage.io v2 API，如 `https://www.githubstatus.com/api/v2/status.json`）。 |
 
 示例：
 
@@ -90,7 +93,8 @@ repository:
 | `monitoring.autoPublishIncident` | 启用自动创建事件 Issue 并在恢复后自动关闭。 |
 | `monitoring.failuresToIncident` | 创建自动化事件所需的连续失败探测次数。 |
 | `monitoring.recoverySuccessesToCloseIncident` | 关闭自动化事件所需的连续成功探测次数。 |
-| `monitoring.historyRetentionDays` | 探测历史的保留窗口。 |
+| `monitoring.historyRetentionDays` | 探测历史的保留窗口（天）。 |
+| `monitoring.demoData` | 把确定性的示例事故和维护合并进发布数据，并显示"演示数据"横幅。默认 `false`；生产状态页绝不要开启。 |
 
 服务级别的 `monitorMode` 优先于默认值。`manual` 服务永远不会被探测，也无法触发自动事件。
 
@@ -106,6 +110,8 @@ issues:
   autoIncidentSeverity: major
   trustedMaintainers: [oncall-user]
   trustedAssociations: [OWNER, MEMBER, COLLABORATOR]
+  notifyFormat: discord
+  notifyNtfyTopic: ""
 ```
 
 `publishLabel` 和 `maintenanceLabel` 是同步器识别的标签。`trustedMaintainers` 和 `trustedAssociations` 控制哪些评论可以成为公开的运营更新。`autoIncidentSeverity` 必须是 `minor`、`major` 或 `critical`。
@@ -114,17 +120,37 @@ issues:
 
 workflow 需要 `contents: write` 和 `issues: write` 权限来持久化监控状态并更新 Issue。
 
+### 通知
+
+事故进入进行中（或解决）时，可以通过 `scripts/notify.ts` 推送到两个可选渠道（由 `sync-issues.ts` 内的 before/after diff 驱动）：
+
+- **Webhook**——把 GitHub Actions Secret `PULSE_WEBHOOK_URL` 设为 Discord 或 Slack 的 incoming webhook 地址，并用 `issues.notifyFormat: discord | slack`（默认 `discord`）选择消息格式。webhook 不会出现在配置文件或日志中。
+- **ntfy.sh**——把 `issues.notifyNtfyTopic` 设为任意 ntfy topic（公共 ntfy.sh 或自建）。无需 Secret，知道 topic 的人即可订阅。
+
+两个渠道互相独立，未配置时静默跳过；投递失败只产生 workflow 警告。opened 和 resolved 事件都会推送，自动与人工发布的事故一视同仁。
+
 ## 历史设置
 
 ```yaml
 history:
   initialMonths: 3
   monthsPerLoad: 3
+  uptimeDays: 90
 ```
 
-`initialMonths` 和 `monthsPerLoad` 控制历史页面加载的按月事件归档数量：首次渲染显示 `initialMonths` 个月（按 `monthsPerLoad` 为一批），"加载更多"按钮每点一次取下一批。
+`initialMonths` 和 `monthsPerLoad` 控制历史页面加载的按月事件归档数量：首次渲染显示 `initialMonths` 个月（按 `monthsPerLoad` 为一批），"加载更多"按钮每点一次取下一批。`uptimeDays` 设置每日 uptime 窗口（默认 90），用于 `uptime.json`、uptime 徽章和行内 uptime 百分比。
 
 embed 是只读的，轮询已发布的 `summary.json`。它通过在 `<script>` 标签上设置 `data-*` 属性配置（见 [`embed.md`](../embed.md)），而不是在 `statuspage.yml` 中；其浏览器端最小间隔为 60 秒。
+
+### 订阅源与演示模式
+
+设置了 `site.url`（或 `site.companyUrl`）后，每次构建还会发布：
+
+- `feed.xml`——事故与维护的 Atom 订阅源，在每页页脚和 `<head>` 中链接。
+- `maintenance.ics`——计划维护的 iCalendar 订阅源，在维护区块中链接。
+- `sitemap.xml` 以及静态页的 Open Graph meta 标签。
+
+设置 `monitoring.demoData: true` 会把确定性的示例事故和维护（标题带 `[Demo]` 标识）合并进发布数据，并显示醒目的"演示数据"横幅。仅供试用模板；生产状态页切勿开启。
 
 ## 服务
 
@@ -137,6 +163,17 @@ service.html?id=<id>
 ```
 
 详情页按同一 ID 过滤事件和维护。因此重命名 ID 属于数据迁移：需要同时更新标签、现有 Issue 上的标签和所有相关链接。
+
+可选的 per-service 字段：
+
+- `checkType: "tcp"` 搭配 `checkPort`——探测 TCP 端口（主机名取自 `checkUrl`）而非 HTTP，适用于数据库、缓存等非 HTTP 端点。默认仍为 HTTP 探测。
+- `runbookUrl`——HTTPS 格式的 Runbook 链接，显示在服务详情页，事故处理时有用。
+- `dependsOn`——单层次依赖另一个服务 id。概览显示"依赖 …"注记；上游 down 时下游展示状态最低为 Degraded（仅展示层，不改变探测数据）。
+- `checkIntervalMinutes`——per-service 的探测间隔覆盖。
+- `expectContent`——HTTP 响应体必须包含的字符串；即使状态码正常，内容不匹配也会把服务标记为 down（可发现页面被劫持或部署错误）。
+- `certSha256`——期望的 TLS 证书 SHA-256 指纹（冒号分隔的十六进制，可用 `openssl x509 -fingerprint -sha256` 查看）。指纹不匹配会把服务标记为 down。
+- `certMinDays`——证书可接受的最短剩余天数；低于阈值时服务降级为 degraded，在证书真正失效前发出警告。
+- `dnsExpect: { type, value }`——check 主机名的 DNS 记录必须包含给定值（`A`、`AAAA`、`CNAME`、`TXT` 或 `MX`；TXT 分片会先合并再比较）。不匹配会把服务标记为 down，可发现 DNS 劫持或记录过期。
 
 推荐的服务配置：
 

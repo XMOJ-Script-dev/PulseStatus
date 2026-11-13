@@ -40,6 +40,9 @@ Edit `config/statuspage.yml`:
 | `site.language` | no | Force the display language: `auto` (follow the visitor's browser, default), `en`, or `zh`. |
 | `site.navLinks` | no | YAML list of `{ label, url }` links appended to the header navigation after the repository link. |
 | `site.colors` | no | Override theme colors with hex values. Supported keys: `brand`, `brandDeep`, `success`, `warning`, `danger`. Example: `colors: { brand: "#0f766e", brandDeep: "#115e59" }`. Applied as CSS variables at runtime, so they compose with `site.theme` and `custom.css`. |
+| `site.url` | no | Public absolute URL of the status site (e.g. `https://status.example.com`). Enables `feed.xml`, `maintenance.ics`, `sitemap.xml`, and social meta tags. Falls back to `site.companyUrl`. |
+| `site.headHtml` | no | Raw HTML injected into `<head>` on every page (analytics snippets, site verification). Trusted like `custom.css` — only inject code you control. |
+| `site.externalStatus` | no | List of `{ name, apiUrl }` external status pages (statuspage.io v2-compatible API, e.g. `https://www.githubstatus.com/api/v2/status.json`) rendered as status chips on the overview. |
 
 Example:
 
@@ -91,6 +94,7 @@ The `monitoring` section controls probe scheduling and optional automatic Incide
 | `monitoring.failuresToIncident` | Consecutive failed probes required to create an automated Incident. |
 | `monitoring.recoverySuccessesToCloseIncident` | Consecutive successful probes required to close an automated Incident. |
 | `monitoring.historyRetentionDays` | Retention window for probe history. |
+| `monitoring.demoData` | Merge deterministic sample incidents and maintenance into the published data and show a "demo data" banner. Defaults to `false`; never enable on a production status page. |
 
 Service-level `monitorMode` takes precedence over the default. `manual` services are never probed and cannot trigger automatic incidents.
 
@@ -106,6 +110,8 @@ issues:
   autoIncidentSeverity: major
   trustedMaintainers: [oncall-user]
   trustedAssociations: [OWNER, MEMBER, COLLABORATOR]
+  notifyFormat: discord
+  notifyNtfyTopic: ""
 ```
 
 `publishLabel` and `maintenanceLabel` are the labels recognized by the synchronizer. `trustedMaintainers` and `trustedAssociations` control which comments can become public operational updates. `autoIncidentSeverity` must be `minor`, `major`, or `critical`.
@@ -114,17 +120,37 @@ When `autoCloseMaintenance` is `true`, the workflow closes an open, non-cancelle
 
 The workflow needs `contents: write` and `issues: write` permissions to persist monitoring state and update Issues.
 
+### Notifications
+
+Incidents that transition to active (or resolve) can push to two optional channels, managed by `scripts/notify.ts` from the before/after diff inside `sync-issues.ts`:
+
+- **Webhook** — set the GitHub Actions Secret `PULSE_WEBHOOK_URL` to a Discord or Slack incoming webhook URL and choose the payload shape with `issues.notifyFormat: discord | slack` (default `discord`). The webhook never appears in configuration files or logs.
+- **ntfy.sh** — set `issues.notifyNtfyTopic` to any ntfy topic (public ntfy.sh or self-hosted). No secret is required; anyone who knows the topic can subscribe.
+
+Both channels are independent and silently skipped when not configured; delivery failures only produce a workflow warning. Opened and resolved events are both pushed, for automated and manually published incidents alike.
+
 ## History settings
 
 ```yaml
 history:
   initialMonths: 3
   monthsPerLoad: 3
+  uptimeDays: 90
 ```
 
-`initialMonths` and `monthsPerLoad` control the monthly Incident archives loaded by the History page: the first render shows `initialMonths` months (in batches of `monthsPerLoad`), and the "Load more" button fetches one additional batch per click.
+`initialMonths` and `monthsPerLoad` control the monthly Incident archives loaded by the History page: the first render shows `initialMonths` months (in batches of `monthsPerLoad`), and the "Load more" button fetches one additional batch per click. `uptimeDays` sets the daily uptime window (default 90) used by `uptime.json`, the uptime badges, and the per-row uptime percentages.
 
 The embed is read-only and polls published `summary.json`. It is configured with `data-*` attributes on its `<script>` tag (see [`embed.md`](embed.md)), not in `statuspage.yml`; its browser-side minimum interval is 60 seconds.
+
+### Subscriptions and demo mode
+
+When `site.url` (or `site.companyUrl`) is set, every build also publishes:
+
+- `feed.xml` — an Atom feed of incidents and maintenance, linked from the footer and `<head>` of every page.
+- `maintenance.ics` — an iCalendar feed of planned maintenance, linked from the maintenance section.
+- `sitemap.xml` and Open Graph meta tags for the static pages.
+
+Set `monitoring.demoData: true` to merge deterministic sample incidents and maintenance into the published data (clearly titled `[Demo]`) and show a visible "demo data" banner. Intended for trying out the template; never enable it on a production status page.
 
 ## Services
 
@@ -137,6 +163,17 @@ service.html?id=<id>
 ```
 
 The detail page filters incidents and maintenance by that same ID. Renaming an ID is therefore a data migration: update labels, existing issue labels, and any links together.
+
+Optional per-service fields:
+
+- `checkType: "tcp"` with `checkPort` — probes a TCP port (hostname taken from `checkUrl`) instead of HTTP; useful for databases, caches, and non-HTTP endpoints. HTTP probing remains the default.
+- `runbookUrl` — an HTTPS link to the runbook, shown on the service detail page and useful during incidents.
+- `dependsOn` — a single-level dependency on another service id. The overview shows a "Depends on …" note, and when the upstream service is down the downstream service displays at least Degraded (display only; probe data is unchanged).
+- `checkIntervalMinutes` — per-service override of the default probe interval.
+- `expectContent` — a string the HTTP response body must contain; a mismatch marks the service down even when the status code is healthy (catching hijacked or misdeployed pages).
+- `certSha256` — the expected TLS certificate SHA-256 fingerprint (colon-separated hex, as shown by `openssl x509 -fingerprint -sha256`). A mismatch marks the service down.
+- `certMinDays` — minimum acceptable certificate lifetime in days; falling below it degrades the service to warn about an expiring certificate before it breaks.
+- `dnsExpect: { type, value }` — the DNS records for the check hostname must include the given value (`A`, `AAAA`, `CNAME`, `TXT`, or `MX`; TXT chunks are joined before comparing). A mismatch marks the service down, catching DNS hijacking or stale records.
 
 Recommended service configuration:
 

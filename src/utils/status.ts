@@ -204,6 +204,18 @@ export function escapeHtml(value: string): string {
   }[character] ?? character));
 }
 
+export function durationParts(startedAt: string, endedAt: string): { days: number; hours: number; minutes: number } | null {
+  const start = new Date(startedAt).valueOf();
+  const end = new Date(endedAt).valueOf();
+  if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return null;
+  let remaining = Math.round((end - start) / 60_000);
+  const days = Math.floor(remaining / 1440);
+  remaining -= days * 1440;
+  const hours = Math.floor(remaining / 60);
+  const minutes = remaining - hours * 60;
+  return { days, hours, minutes };
+}
+
 function safeMarkdownUrl(value: string): string | null {
   const url = value.trim();
   return /^(?:https?:|mailto:)/i.test(url) ? url : null;

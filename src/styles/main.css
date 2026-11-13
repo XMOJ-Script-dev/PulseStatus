@@ -206,23 +206,74 @@ html[data-style="mono"] .uptime-day[data-level="poor"] { background: #d4d4d4; }
 html[data-style="mono"] .uptime-day[data-level="critical"] { background: #171717; }
 @media (max-width: 640px) { .site-header, .hero { align-items: flex-start; flex-direction: column; } .header-controls { width: 100%; align-items: flex-start; flex-direction: column; gap: 12px; } .hero-enterprise { padding: 26px 22px; } .hero-aside { width: 100%; border-top: 1px solid var(--border); border-left: 0; } nav { width: 100%; justify-content: space-between; } .site-shell { padding-inline: 14px; } .section-heading { align-items: flex-start; flex-direction: column; gap: 6px; } .service-detail-header { flex-direction: column; } .detail-list > div { display: grid; gap: 3px; } .detail-list dd { text-align: left; } }
 @media (prefers-color-scheme: dark) {
-  :root { color-scheme: dark; color: #e5e7eb; --surface: #17243d; --border: #31415e; --muted: #a9b6cc; }
-  body { background: #101827; }
-  .pill { background: #252c67; color: #c7d2fe; }
-  .pill.critical { background: #b91c1c; color: #fff; }
-  .pill.major { background: #51212a; color: #fecaca; }
-  .pill.major-outage, .pill.all-down { background: #51212a; color: #fecaca; }
-  .pill.minor { background: #51371c; color: #fed7aa; }
-  .pill.degraded-performance, .pill.partial-outage { background: #51371c; color: #fed7aa; }
-  .pill.unknown { background: var(--border); color: var(--muted); }
-  .pill.maintenance { background: #1e3a8a; color: #bfdbfe; }
-  .board-dot.operational { background: #4ade80; }
-  .board-dot.degraded, .board-dot.degraded-performance, .board-dot.partial-outage { background: #fbbf24; }
-  .board-dot.down, .board-dot.major-outage, .board-dot.all-down { background: #f87171; }
-  .board-dot.maintenance { background: #60a5fa; }
-  .board-status.operational { color: #4ade80; }
-  .board-status.degraded, .board-status.degraded-performance, .board-status.partial-outage { color: #fbbf24; }
-  .board-status.down, .board-status.major-outage, .board-status.all-down { color: #f87171; }
-  .board-status.maintenance { color: #60a5fa; }
-  .error { background: #3b1e27; }
+  :root:not([data-theme="light"]) { color-scheme: dark; color: #e5e7eb; --surface: #17243d; --border: #31415e; --muted: #a9b6cc; }
+  :root:not([data-theme="light"]) body { background: #101827; }
+  :root:not([data-theme="light"]) .pill { background: #252c67; color: #c7d2fe; }
+  :root:not([data-theme="light"]) .pill.critical { background: #b91c1c; color: #fff; }
+  :root:not([data-theme="light"]) .pill.major { background: #51212a; color: #fecaca; }
+  :root:not([data-theme="light"]) .pill.major-outage, :root:not([data-theme="light"]) .pill.all-down { background: #51212a; color: #fecaca; }
+  :root:not([data-theme="light"]) .pill.minor { background: #51371c; color: #fed7aa; }
+  :root:not([data-theme="light"]) .pill.degraded-performance, :root:not([data-theme="light"]) .pill.partial-outage { background: #51371c; color: #fed7aa; }
+  :root:not([data-theme="light"]) .pill.unknown { background: var(--border); color: var(--muted); }
+  :root:not([data-theme="light"]) .pill.maintenance { background: #1e3a8a; color: #bfdbfe; }
+  :root:not([data-theme="light"]) .board-dot.operational { background: #4ade80; }
+  :root:not([data-theme="light"]) .board-dot.degraded, :root:not([data-theme="light"]) .board-dot.degraded-performance, :root:not([data-theme="light"]) .board-dot.partial-outage { background: #fbbf24; }
+  :root:not([data-theme="light"]) .board-dot.down, :root:not([data-theme="light"]) .board-dot.major-outage, :root:not([data-theme="light"]) .board-dot.all-down { background: #f87171; }
+  :root:not([data-theme="light"]) .board-dot.maintenance { background: #60a5fa; }
+  :root:not([data-theme="light"]) .board-status.operational { color: #4ade80; }
+  :root:not([data-theme="light"]) .board-status.degraded, :root:not([data-theme="light"]) .board-status.degraded-performance, :root:not([data-theme="light"]) .board-status.partial-outage { color: #fbbf24; }
+  :root:not([data-theme="light"]) .board-status.down, :root:not([data-theme="light"]) .board-status.major-outage, :root:not([data-theme="light"]) .board-status.all-down { color: #f87171; }
+  :root:not([data-theme="light"]) .board-status.maintenance { color: #60a5fa; }
+  :root:not([data-theme="light"]) .error { background: #3b1e27; }
 }
+html[data-theme="dark"] { color-scheme: dark; color: #e5e7eb; --surface: #17243d; --border: #31415e; --muted: #a9b6cc; }
+html[data-theme="dark"] body { background: #101827; }
+html[data-theme="dark"] .pill { background: #252c67; color: #c7d2fe; }
+html[data-theme="dark"] .pill.critical { background: #b91c1c; color: #fff; }
+html[data-theme="dark"] .pill.major { background: #51212a; color: #fecaca; }
+html[data-theme="dark"] .pill.major-outage, html[data-theme="dark"] .pill.all-down { background: #51212a; color: #fecaca; }
+html[data-theme="dark"] .pill.minor { background: #51371c; color: #fed7aa; }
+html[data-theme="dark"] .pill.degraded-performance, html[data-theme="dark"] .pill.partial-outage { background: #51371c; color: #fed7aa; }
+html[data-theme="dark"] .pill.unknown { background: var(--border); color: var(--muted); }
+html[data-theme="dark"] .pill.maintenance { background: #1e3a8a; color: #bfdbfe; }
+html[data-theme="dark"] .board-dot.operational { background: #4ade80; }
+html[data-theme="dark"] .board-dot.degraded, html[data-theme="dark"] .board-dot.degraded-performance, html[data-theme="dark"] .board-dot.partial-outage { background: #fbbf24; }
+html[data-theme="dark"] .board-dot.down, html[data-theme="dark"] .board-dot.major-outage, html[data-theme="dark"] .board-dot.all-down { background: #f87171; }
+html[data-theme="dark"] .board-dot.maintenance { background: #60a5fa; }
+html[data-theme="dark"] .board-status.operational { color: #4ade80; }
+html[data-theme="dark"] .board-status.degraded, html[data-theme="dark"] .board-status.degraded-performance, html[data-theme="dark"] .board-status.partial-outage { color: #fbbf24; }
+html[data-theme="dark"] .board-status.down, html[data-theme="dark"] .board-status.major-outage, html[data-theme="dark"] .board-status.all-down { color: #f87171; }
+html[data-theme="dark"] .board-status.maintenance { color: #60a5fa; }
+html[data-theme="dark"] .error { background: #3b1e27; }
+
+/* Capability extensions */
+.theme-toggle { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink-soft); cursor: pointer; font-size: .95rem; line-height: 1; }
+.theme-toggle:hover, .theme-toggle:focus-visible { border-color: var(--brand); color: var(--brand); }
+.notice-banner { display: flex; align-items: center; gap: 10px; margin: 0 0 14px; padding: 10px 14px; border-radius: 10px; font-size: .88rem; font-weight: 600; }
+.notice-banner.demo { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+.notice-banner.stale { background: #fff7ed; color: #9a3412; border: 1px solid #fed7aa; }
+html[data-theme="dark"] .notice-banner.demo { background: #4a3419; color: #fcd34d; border-color: #6b4d1f; }
+html[data-theme="dark"] .notice-banner.stale { background: #4a2c14; color: #fdba74; border-color: #6b3d1c; }
+.announcement-grid { display: grid; gap: 12px; }
+.filter-bar { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.filter-bar input, .filter-bar select { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: inherit; font: inherit; font-size: .9rem; }
+.filter-bar input { flex: 1 1 220px; }
+.filter-bar select { flex: 0 0 auto; }
+.month-summary { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 2px 0 14px; font-size: .82rem; color: var(--muted); font-weight: 600; }
+.month-summary .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.month-summary .dot.critical { background: #b91c1c; }
+.month-summary .dot.major { background: #ef4444; }
+.month-summary .dot.minor { background: #f59e0b; }
+.month-summary .dot.maintenance { background: #3b82f6; }
+.external-status { display: flex; flex-wrap: wrap; gap: 8px 16px; padding: 12px 0 0; border-top: 1px solid var(--border); margin-top: 16px; font-size: .84rem; color: var(--muted); }
+.external-status .ext-chip { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
+.external-status .board-dot { width: 8px; height: 8px; }
+.service-row-uptime { margin-left: auto; font-size: .84rem; }
+.service-row .pill { margin-left: 12px; }
+.service-row-dep { font-weight: 500; font-size: .78rem; }
+.latency-chart { width: 100%; height: auto; }
+.latency-chart polyline { fill: none; stroke: var(--brand); stroke-width: 2; }
+.latency-chart .latency-grid { stroke: var(--border); stroke-width: 1; }
+.latency-chart text { fill: var(--muted); font-size: 10px; font-family: inherit; }
+.latency-heading { display: flex; justify-content: space-between; align-items: baseline; margin: 0 0 8px; font-size: .84rem; color: var(--muted); }
+.section-link { font-size: .82rem; font-weight: 600; }

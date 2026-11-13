@@ -21,6 +21,7 @@ export interface Incident {
   url: string;
   bodySummary: string;
   bodyMarkdown?: string;
+  postmortemMarkdown?: string;
   startedAt: string;
   updatedAt: string;
   closedAt?: string;
@@ -37,9 +38,18 @@ export interface Service {
   nameI18n?: Record<string, string>;
   group?: string;
   parentGroup?: string;
+  dependsOn?: string;
+  runbookUrl?: string;
   description: string;
   descriptionI18n?: Record<string, string>;
   publicUrl?: string;
+  checkUrl?: string;
+  checkType?: 'http' | 'tcp';
+  checkPort?: number;
+  expectContent?: string;
+  certSha256?: string;
+  certMinDays?: number;
+  dnsExpect?: { type: 'A' | 'AAAA' | 'CNAME' | 'TXT' | 'MX'; value: string };
   status: ServiceStatus;
   lastCheckedAt?: string;
   latencyMs?: number;
@@ -98,6 +108,7 @@ export interface SiteConfig {
   favicon: string;
   companyName: string;
   companyUrl?: string;
+  url?: string;
   logo?: string;
   heroTitle?: string;
   tagline?: string;
@@ -110,8 +121,11 @@ export interface SiteConfig {
   githubUrl?: string;
   githubLabel?: string;
   layout?: 'standard' | 'fused';
-  history?: { initialMonths: number; monthsPerLoad: number };
+  history?: { initialMonths: number; monthsPerLoad: number; uptimeDays?: number };
+  probeIntervalMinutes?: number;
+  externalStatus?: Array<{ name: string; apiUrl: string }>;
   colors?: Partial<Record<'brand' | 'brandDeep' | 'success' | 'warning' | 'danger', string>>;
+  headHtml?: string;
   theme: 'modern' | 'compact' | 'vivid' | 'mono';
   serviceGroups?: Record<string, ServiceGroupConfig>;
 }

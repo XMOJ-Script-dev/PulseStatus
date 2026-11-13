@@ -151,6 +151,10 @@ These files describe the current run and can be regenerated:
 | `public/data/uptime.json` | Regenerated snapshot | Incident-derived daily uptime for the configured history window. |
 | `public/data/history-index.json` | Regenerated index | Monthly archive index of resolved incidents and completed or cancelled maintenance. |
 | `public/data/history/YYYY-MM.json` | Generated monthly files | Resolved incidents plus completed or cancelled maintenance, grouped by UTC start month. |
+| `public/feed.xml` | Regenerated feed | Atom feed of incidents and maintenance (requires `site.url` or `site.companyUrl`). |
+| `public/maintenance.ics` | Regenerated feed | iCalendar feed of planned maintenance (same URL requirement). |
+| `public/sitemap.xml` | Regenerated index | Sitemap of the static pages (same URL requirement). |
+| `STATUS.md` | Regenerated summary | Repository status table with per-service state, latency, and uptime, committed by the workflow. |
 
 Probe history and incident-derived uptime are deliberately different:
 

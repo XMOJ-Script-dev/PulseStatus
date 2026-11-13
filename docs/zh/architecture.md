@@ -151,6 +151,10 @@ stateDiagram-v2
 | `public/data/uptime.json` | 重新生成的快照 | 由 Incident 推导的、配置历史窗口内的每日正常运行时间。 |
 | `public/data/history-index.json` | 重新生成的索引 | 已解决 Incident 以及已完成或已取消维护的月度归档索引。 |
 | `public/data/history/YYYY-MM.json` | 按月生成的文件 | 按 UTC 开始月份分组的已解决 Incident 以及已完成或已取消维护。 |
+| `public/feed.xml` | 重新生成的订阅源 | Incident 与维护的 Atom 订阅源（需要 `site.url` 或 `site.companyUrl`）。 |
+| `public/maintenance.ics` | 重新生成的订阅源 | 计划维护的 iCalendar 订阅源（同样的 URL 要求）。 |
+| `public/sitemap.xml` | 重新生成的索引 | 静态页的站点地图（同样的 URL 要求）。 |
+| `STATUS.md` | 重新生成的摘要 | 仓库状态表：每服务的状态、延迟和 uptime，由 workflow 提交。 |
 
 探测历史和由 Incident 推导的正常运行时间是有意不同的：
 

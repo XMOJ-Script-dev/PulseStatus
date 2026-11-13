@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>PulseStatus Status</title>
+  <link href="https://xmoj-script.uk" rel="alternate"/>
+  <link href="https://xmoj-script.uk/feed.xml" rel="self"/>
+  <id>https://xmoj-script.uk</id>
+  <updated>2026-11-15T16:05:25.801Z</updated>
+  <entry>
+    <title>[Demo] Planned network maintenance</title>
+    <link href="https://github.com/demo/pulsestatus-demo" rel="alternate"/>
+    <id>https://github.com/demo/pulsestatus-demo</id>
+    <updated>2026-11-15T16:05:25.801Z</updated>
+    <summary>Scheduled maintenance from 2026-11-15T14:35:25.801Z to 2026-11-15T16:05:25.801Z</summary>
+    <category term="maintenance"/>
+    <category term="web"/>
+  </entry>
+  <entry>
+    <title>[Demo] API database upgrade</title>
+    <link href="https://github.com/demo/pulsestatus-demo" rel="alternate"/>
+    <id>https://github.com/demo/pulsestatus-demo</id>
+    <updated>2026-11-13T15:25:25.801Z</updated>
+    <summary>Scheduled maintenance from 2026-11-13T14:25:25.801Z to 2026-11-13T15:25:25.801Z</summary>
+    <category term="maintenance"/>
+    <category term="api"/>
+    <category term="assets"/>
+  </entry>
+  <entry>
+    <title>[Demo] Elevated error rates on the API</title>
+    <link href="https://github.com/demo/pulsestatus-demo" rel="alternate"/>
+    <id>https://github.com/demo/pulsestatus-demo</id>
+    <updated>2026-11-13T14:30:25.801Z</updated>
+    <summary>Demo data: the API is returning elevated 5xx responses while the fix is monitored.</summary>
+    <category term="incident"/>
+    <category term="major"/>
+    <category term="api"/>
+  </entry>
+  <entry>
+    <title>[Demo] Brief docs site outage</title>
+    <link href="https://github.com/demo/pulsestatus-demo" rel="alternate"/>
+    <id>https://github.com/demo/pulsestatus-demo</id>
+    <updated>2026-11-10T15:15:25.801Z</updated>
+    <summary>Demo data: the documentation site was unreachable for 40 minutes during a deployment.</summary>
+    <category term="incident"/>
+    <category term="minor"/>
+    <category term="docs"/>
+  </entry>
+  <entry>
+    <title>[Demo] Assets service degradation</title>
+    <link href="https://github.com/demo/pulsestatus-demo" rel="alternate"/>
+    <id>https://github.com/demo/pulsestatus-demo</id>
+    <updated>2026-11-01T16:35:25.801Z</updated>
+    <summary>Demo data: image serving was degraded for two hours after a storage backend failure.</summary>
+    <category term="incident"/>
+    <category term="critical"/>
+    <category term="assets"/>
+  </entry>
+</feed>

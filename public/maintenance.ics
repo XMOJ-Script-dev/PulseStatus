@@ -1,0 +1,25 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//PulseStatus//Maintenance//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:PulseStatus Maintenance
+BEGIN:VEVENT
+UID:maintenance-demo-7@xmoj-script.uk
+DTSTAMP:20261113T142525Z
+DTSTART:20261113T142525Z
+DTEND:20261113T152525Z
+SUMMARY:[Demo] API database upgrade
+URL:https://github.com/demo/pulsestatus-demo
+DESCRIPTION:Services: api\, assets
+END:VEVENT
+BEGIN:VEVENT
+UID:maintenance-demo-8@xmoj-script.uk
+DTSTAMP:20261115T143525Z
+DTSTART:20261115T143525Z
+DTEND:20261115T160525Z
+SUMMARY:[Demo] Planned network maintenance
+URL:https://github.com/demo/pulsestatus-demo
+DESCRIPTION:Services: web
+END:VEVENT
+END:VCALENDAR

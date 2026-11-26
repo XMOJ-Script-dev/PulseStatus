@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-11-26T00:11:40.485Z",
+  "generatedAt": "2026-11-26T08:08:56.878Z",
   "services": {
     "web": {
       "consecutiveFailures": 0,
-      "consecutiveSuccesses": 200,
-      "lastProbeAt": "2026-11-26T00:11:38.083Z",
+      "consecutiveSuccesses": 201,
+      "lastProbeAt": "2026-11-26T08:08:54.738Z",
       "probeDue": false
     },
     "docs": {
       "consecutiveFailures": 0,
-      "consecutiveSuccesses": 200,
-      "lastProbeAt": "2026-11-26T00:11:38.198Z",
+      "consecutiveSuccesses": 201,
+      "lastProbeAt": "2026-11-26T08:08:54.759Z",
       "probeDue": false
     }
   }
